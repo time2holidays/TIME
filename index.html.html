@@ -1,0 +1,2418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b5cab">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>Time2Holidays - Booking Management System</title>
+
+<style>
+:root{
+  --primary:#0b5cab;
+  --secondary:#0f766e;
+  --dark:#172033;
+  --light:#f4f7fb;
+  --white:#ffffff;
+  --danger:#dc2626;
+  --warning:#d97706;
+  --success:#15803d;
+  --border:#dbe3ee;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--light);
+  color:#172033;
+}
+header{
+  background:linear-gradient(135deg,var(--primary),#083b70);
+  color:white;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+header h1{margin:0;font-size:22px}
+header small{opacity:.85}
+.app{
+  display:grid;
+  grid-template-columns:250px 1fr;
+  min-height:calc(100vh - 74px);
+}
+.sidebar{
+  background:#101827;
+  color:white;
+  padding:15px 0;
+}
+.sidebar button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#d8e1ef;
+  padding:14px 22px;
+  text-align:left;
+  cursor:pointer;
+  font-size:14px;
+}
+.sidebar button:hover,.sidebar button.active{
+  background:#1e3a5f;
+  color:white;
+}
+.content{padding:22px;overflow:auto}
+.page{display:none}
+.page.active{display:block}
+.card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;
+  margin-bottom:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:14px;
+}
+.stat{
+  padding:18px;
+  border-radius:10px;
+  background:white;
+  border:1px solid var(--border);
+}
+.stat h3{margin:0 0 8px;font-size:13px;color:#64748b}
+.stat .num{font-size:24px;font-weight:bold}
+label{font-size:12px;font-weight:bold;display:block;margin-bottom:5px}
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  background:white;
+}
+textarea{min-height:75px}
+.form-group{margin-bottom:12px}
+.btn{
+  border:0;
+  padding:10px 15px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+  margin-right:5px;
+}
+.btn-primary{background:var(--primary);color:white}
+.btn-success{background:var(--success);color:white}
+.btn-danger{background:var(--danger);color:white}
+.btn-warning{background:var(--warning);color:white}
+.btn-secondary{background:#64748b;color:white}
+.btn-small{padding:6px 9px;font-size:11px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  font-size:13px;
+}
+th,td{
+  padding:10px;
+  border:1px solid var(--border);
+  text-align:left;
+}
+th{background:#eef4fb}
+.table-wrap{overflow:auto}
+.badge{
+  padding:4px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:bold;
+}
+.confirmed{background:#dcfce7;color:#166534}
+.pending{background:#fef3c7;color:#92400e}
+.hold{background:#fee2e2;color:#991b1b}
+.cancelled{background:#e5e7eb;color:#374151}
+.hidden{display:none!important}
+.service-box{
+  border:1px solid var(--border);
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:12px;
+  background:#fafcff;
+}
+.section-title{
+  margin:0 0 15px;
+  padding-bottom:8px;
+  border-bottom:2px solid var(--primary);
+  color:var(--primary);
+}
+.top-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:15px;
+}
+.search{
+  max-width:400px;
+  margin-bottom:15px;
+}
+.notice{
+  padding:10px;
+  background:#eff6ff;
+  border-left:4px solid var(--primary);
+  margin-bottom:15px;
+}
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:20px;
+}
+.modal.show{display:flex}
+.modal-content{
+  background:white;
+  width:min(1100px,100%);
+  max-height:90vh;
+  overflow:auto;
+  border-radius:10px;
+  padding:20px;
+}
+.right{text-align:right}
+.money{font-weight:bold}
+@media(max-width:800px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:flex;overflow:auto;padding:0}
+  .sidebar button{min-width:140px}
+  .content{padding:12px}
+}
+@media print{
+  header,.sidebar,.top-actions,.no-print{display:none!important}
+  .app{display:block}
+  .content{padding:0}
+  .page{display:none!important}
+  #invoicePage.print-active,#reports.print-active{display:block!important}
+  #reports .card{box-shadow:none;border:0}
+}
+
+/* LOGIN SYSTEM */
+#loginScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0b5cab,#083b70)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:14px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-card h2{margin:0 0 8px;color:#0b5cab}.login-card p{color:#64748b}.login-error{color:#dc2626;font-size:13px;margin-top:10px}.login-actions{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:16px}
+.user-bar{display:flex;align-items:center;gap:10px;font-size:12px}.user-bar button{margin:0}
+
+
+/* === Professional report and application enhancements === */
+:root{--primary:#0b5cab;--secondary:#0f766e;--dark:#172033;--light:#f4f7fb;--white:#fff;--danger:#dc2626;--warning:#d97706;--success:#15803d;--border:#dbe3ee;--muted:#64748b}
+.section-title{letter-spacing:.1px}.card{box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.btn{transition:transform .15s ease,opacity .15s ease}.btn:hover{opacity:.92;transform:translateY(-1px)}
+.report-company-header{padding:18px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(135deg,#f8fbff,#eef6ff);line-height:1.65;margin-bottom:16px}
+.report-company-header strong:first-child{font-size:20px;color:var(--primary)}
+.ca-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0}.ca-summary .stat{min-height:105px}.ca-note{font-size:12px;color:var(--muted);padding:10px 12px;border-left:4px solid var(--warning);background:#fffbeb;margin-top:12px}
+@media print{body{background:#fff!important}.modal,.sidebar,header,.top-actions,.no-print,#loginScreen{display:none!important}.content{padding:0!important}.card{box-shadow:none!important;border:0!important}.page{display:none!important}#reports{display:block!important}table{font-size:11px}th,td{padding:6px!important}}
+
+
+/* Company logo */
+.company-logo{max-height:58px;max-width:280px;width:auto;object-fit:contain;display:block}
+.header-brand{display:flex;align-items:center;gap:14px}.header-brand-text h1{margin:0}.header-brand-text small{display:block;margin-top:4px}
+.document-brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}.document-logo{max-height:78px;max-width:300px;width:auto;object-fit:contain;margin-bottom:8px}.company-logo-preview{max-height:100px;max-width:320px;width:auto;object-fit:contain;border:1px solid #dbe3ee;border-radius:8px;padding:8px;background:#fff;margin-top:8px}
+.report-logo{max-height:70px;max-width:280px;width:auto;object-fit:contain;margin:0 auto 8px;display:block}
+@media(max-width:700px){.company-logo{max-width:210px;max-height:45px}.header-brand{gap:8px}.header-brand-text small{display:none}.document-logo{max-width:220px}}
+
+/* ===== ANDROID / MOBILE RESPONSIVE MODE ===== */
+.mobile-menu-btn{display:none;border:0;background:rgba(255,255,255,.16);color:#fff;width:44px;height:44px;border-radius:9px;font-size:22px;cursor:pointer;flex:0 0 auto}
+.mobile-overlay{display:none}.mobile-bottom-nav{display:none}
+@media(max-width:800px){html,body{width:100%;overflow-x:hidden}body{font-size:15px;padding-bottom:72px}header{position:sticky;top:0;z-index:1200;padding:10px 12px;gap:10px;min-height:64px;padding-top:max(10px,env(safe-area-inset-top))}.mobile-menu-btn{display:inline-flex;align-items:center;justify-content:center;order:-1}.header-brand{min-width:0;flex:1;overflow:hidden}.header-brand-text h1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-brand-text small{display:none}.company-logo{max-width:150px;max-height:38px}.user-bar{gap:5px;min-width:0}#headerCompany{display:none}#loggedInUser{max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-bar .btn{padding:8px 10px;font-size:11px}.app{display:block;min-height:0}.sidebar{position:fixed;left:0;top:0;bottom:0;width:min(285px,82vw);z-index:1500;display:block!important;padding:76px 0 24px;background:#101827;overflow-y:auto;transform:translateX(-105%);transition:transform .25s ease;box-shadow:8px 0 30px rgba(0,0,0,.28)}body.menu-open .sidebar{transform:translateX(0)}.sidebar button{min-width:0!important;width:100%;padding:16px 20px;font-size:15px;border-bottom:1px solid rgba(255,255,255,.04)}.mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1400;opacity:0;pointer-events:none;transition:opacity .2s ease;display:block}body.menu-open .mobile-overlay{opacity:1;pointer-events:auto}.content{padding:12px 10px 88px;overflow:visible}h2{font-size:21px;margin:8px 0 14px}h3{font-size:16px}.card{padding:14px;margin-bottom:12px;border-radius:12px}.grid{grid-template-columns:1fr!important;gap:10px}.stat{padding:14px;min-height:88px}.stat .num{font-size:21px;word-break:break-word}.top-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.top-actions .btn{width:100%;margin:0;min-height:44px}.btn{min-height:44px;padding:10px 12px;margin:3px 2px;font-size:13px}.btn-small{min-height:34px;padding:7px 9px}input,select,textarea{font-size:16px;padding:12px;min-height:46px}textarea{min-height:92px}label{font-size:12px;margin-top:2px}.form-group{margin-bottom:10px}.search{max-width:none;width:100%}.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--border)}table{min-width:650px;font-size:12px}th,td{padding:9px 8px;white-space:nowrap}.modal{padding:8px;align-items:flex-end}.modal-content{width:100%;max-height:92vh;border-radius:16px 16px 0 0;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}.service-box{padding:12px}.document-brand{display:block}.document-logo{max-width:210px;max-height:60px}.company-logo-preview{max-width:100%;height:auto}.login-card{padding:22px 18px;border-radius:16px}.login-actions{display:block}.login-actions .btn{width:100%;margin:8px 0 0}.mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);z-index:1300;display:grid;grid-template-columns:repeat(5,1fr);box-shadow:0 -4px 18px rgba(15,23,42,.08)}.mobile-bottom-nav button{border:0;background:#fff;color:#475569;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px;cursor:pointer}.mobile-bottom-nav button span{font-size:20px;line-height:1}.mobile-bottom-nav button.active{color:var(--primary);font-weight:bold;background:#f5f9ff}}
+@media(max-width:420px){.company-logo{max-width:120px}.header-brand-text{display:none}.top-actions{grid-template-columns:1fr}.ca-summary{grid-template-columns:1fr!important}}
+
+</style>
+</head>
+
+<body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>✈ Time2Holidays Login</h2>
+    <p>Booking Management System</p>
+    <div class="form-group"><label>Login ID</label><input id="loginId" autocomplete="username" placeholder="Enter Login ID"></div>
+    <div class="form-group"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter Password" onkeydown="if(event.key==='Enter') login()"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="login()">Login</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+
+<header>
+  <button class="mobile-menu-btn no-print" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
+  <div class="header-brand">
+    <img id="headerLogo" class="company-logo" alt="Time2Holidays Logo">
+    <div class="header-brand-text">
+      <h1>Time2Holidays Booking Management System</h1>
+      <small>Travel Booking • Suppliers • Payments • Reports</small>
+    </div>
+  </div>
+  <div class="user-bar"><span id="headerCompany">INR (₹)</span><span id="loggedInUser"></span><button class="btn btn-secondary btn-small" onclick="logout()">Logout</button></div>
+</header>
+
+<div class="mobile-overlay no-print" onclick="closeMobileMenu()"></div>
+<div class="app">
+
+<nav class="sidebar">
+  <button class="nav active" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+  <button class="nav" onclick="showPage('bookings',this)">📋 Bookings</button>
+  <button class="nav" onclick="showPage('suppliers',this)">🏢 Suppliers</button>
+  <button class="nav" onclick="showPage('reports',this)">📊 Reports</button>
+  <button class="nav" onclick="showPage('invoicePage',this)">🧾 Client Invoice</button>
+  <button class="nav" onclick="showPage('company',this)">⚙ Company Profile</button>
+  <button class="nav" onclick="showPage('database',this)">💾 Database Tools</button>
+  <button class="nav admin-only" onclick="showPage('deletedRecords',this)">🗑 Deleted Records</button>
+  <button class="nav admin-only" onclick="showPage('users',this)">👤 User Management</button>
+</nav>
+
+<main class="content">
+
+
+<!-- USERS -->
+<section id="users" class="page">
+  <div class="card">
+    <h3 class="section-title">User Management (Admin Only)</h3>
+    <div class="notice">Create additional users with their own Login ID and Password.</div>
+    <div class="grid">
+      <div class="form-group"><label>New User Login ID *</label><input id="newUserId"></div>
+      <div class="form-group"><label>New User Password *</label><input id="newUserPassword" type="password"></div>
+      <div class="form-group"><label>User Name</label><input id="newUserName" placeholder="Optional name"></div>
+      <div class="form-group"><label>Role</label><select id="newUserRole"><option value="user">User</option><option value="admin">Admin</option></select></div>
+    </div>
+    <button class="btn btn-success" onclick="createUser()">➕ Create User</button>
+  </div>
+  <div class="card"><h3 class="section-title">Existing Users</h3><div class="table-wrap"><table><thead><tr><th>Login ID</th><th>Name</th><th>Role</th><th>Action</th></tr></thead><tbody id="userTable"></tbody></table></div></div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+  <h2>Dashboard</h2>
+
+  <div class="grid">
+    <div class="stat"><h3>Total Bookings</h3><div class="num" id="statBookings">0</div></div>
+    <div class="stat"><h3>Confirmed</h3><div class="num" id="statConfirmed">0</div></div>
+    <div class="stat"><h3>On Hold</h3><div class="num" id="statHold">0</div></div>
+    <div class="stat"><h3>Client Sales</h3><div class="num" id="statSales">₹0</div></div>
+    <div class="stat"><h3>Supplier Cost</h3><div class="num" id="statCost">₹0</div></div>
+    <div class="stat"><h3>Total Profit</h3><div class="num" id="statProfit">₹0</div></div>
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">Recent Bookings</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Destination</th>
+            <th>Status</th>
+            <th>Sale</th>
+          </tr>
+        </thead>
+        <tbody id="recentBookings"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- BOOKINGS -->
+<section id="bookings" class="page">
+  <div class="top-actions">
+    <button class="btn btn-primary" onclick="newBooking()">➕ New Booking</button>
+    <input class="search" id="bookingSearch" placeholder="Search Booking ID, Client, Supplier, Hotel, Airline..." oninput="renderBookings()">
+    <button class="btn btn-success" onclick="exportBookingsExcel()">📊 Export Excel</button>
+    <button class="btn btn-danger" onclick="exportBookingsPDF()">📄 Export PDF</button>
+    <button class="btn btn-primary" onclick="exportBookingsWord()">📝 Export Word</button>
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">All Bookings</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>BKG Date</th>
+            <th>Client</th>
+            <th>Destination</th>
+            <th>Services</th>
+            <th>Sale</th>
+            <th>Profit</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="bookingTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- SUPPLIERS -->
+<section id="suppliers" class="page">
+  <div class="top-actions">
+    <button class="btn btn-primary" onclick="openSupplierModal()">➕ Add Supplier</button>
+    <input class="search" id="supplierSearch" placeholder="Search Supplier..." oninput="renderSuppliers()">
+  </div>
+
+  <div class="card">
+    <h3 class="section-title">Supplier Management</h3>
+    <div class="notice">
+      Supplier details and supplier costs are internal company information and are not shown on the client invoice.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Supplier</th>
+            <th>Contact Person</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>GST No.</th>
+            <th>Bookings</th>
+            <th>Outstanding</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="supplierTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- REPORTS -->
+<section id="reports" class="page">
+  <div class="card">
+    <h3 class="section-title">Booking & Profit Reports</h3>
+
+    <div class="grid">
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" id="reportFrom" onchange="renderReports()">
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" id="reportTo" onchange="renderReports()">
+      </div>
+      <div class="form-group">
+        <label>Client / Supplier Search</label>
+        <input id="reportSearch" oninput="renderReports()" placeholder="Search...">
+      </div>
+    </div>
+
+    <button class="btn btn-success" onclick="exportReportExcel()">📊 Export Report Excel</button>
+    <button class="btn btn-danger" onclick="exportReportPDF()">📄 Export Report PDF</button>
+    <button class="btn btn-primary" onclick="exportReportWord()">📝 Export Word</button>
+    <button class="btn btn-secondary" onclick="window.print()">🖨 Print Report</button>
+
+    <div class="table-wrap" style="margin-top:15px">
+      <table>
+        <thead>
+          <tr>
+            <th>Sr</th>
+            <th>BKG DATE</th>
+            <th>Booking ID</th>
+            <th>Company Invoice</th>
+            <th>Supplier Invoice No.</th>
+            <th>Customer</th>
+            <th>Country</th>
+            <th>City</th>
+            <th>Gross Paid</th>
+            <th>Supplier Paid</th>
+            <th>Profit</th>
+            <th>GST 5% on Profit</th>
+            <th>Net Profit</th>
+          </tr>
+        </thead>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+  <div class="card">
+    <h3 class="section-title">Chartered Accountant Reports</h3>
+    <div class="notice">These reports are generated from booking sales, supplier costs, payments and recorded booking profit. For statutory filing, depreciation, bank balances, loans, fixed assets and other ledger accounts must be maintained separately.</div>
+    <div class="top-actions">
+      <button class="btn btn-primary" onclick="renderCAReports()">🔄 Refresh CA Reports</button>
+      <button class="btn btn-success" onclick="printCAReport()">🖨 Print CA Report</button>
+      <button class="btn btn-warning" onclick="exportCAExcel()">📊 Export Excel</button>
+      <button class="btn btn-danger" onclick="exportCAPDF()">📄 Export PDF</button>
+      <button class="btn btn-primary" onclick="exportCAWord()">📝 Export Word</button>
+    </div>
+    <div id="caReportHeader" class="notice" style="margin-top:12px"></div>
+    <div class="grid">
+      <div class="stat"><h3>Total Sales</h3><div class="num" id="caSales">₹0</div></div>
+      <div class="stat"><h3>Total Supplier Cost</h3><div class="num" id="caCost">₹0</div></div>
+      <div class="stat"><h3>Net Profit</h3><div class="num" id="caProfit">₹0</div></div>
+      <div class="stat"><h3>GST on Profit</h3><div class="num" id="caGST">₹0</div></div>
+    </div>
+
+    <h4 class="section-title" style="margin-top:22px">Profit & Loss Account</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Particulars</th><th class="right">Amount (₹)</th></tr></thead>
+      <tbody id="profitLossTable"></tbody>
+    </table></div>
+
+    <h4 class="section-title" style="margin-top:22px">Booking Position / Balance Summary</h4>
+    <div class="notice">Assets and liabilities below are based only on receivables/payables and retained booking profit available in this system.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Assets</th><th class="right">Amount (₹)</th><th>Liabilities & Equity</th><th class="right">Amount (₹)</th></tr></thead>
+      <tbody id="balanceSheetTable"></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <h3 class="section-title">Supplier Payment Report</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Supplier</th>
+            <th>Total Cost</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Bookings</th>
+          </tr>
+        </thead>
+        <tbody id="supplierReportTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- INVOICE -->
+<section id="invoicePage" class="page">
+  <div class="top-actions no-print">
+    <select id="invoiceBookingSelect" onchange="renderInvoice()"></select>
+    <button class="btn btn-primary" onclick="printInvoice()">🖨 Print Invoice</button>
+      <button class="btn btn-success" onclick="exportInvoiceExcel()">📊 Export Invoice Excel</button>
+      <button class="btn btn-danger" onclick="exportInvoicePDF()">📄 Export Invoice PDF</button>
+      <button class="btn btn-primary" onclick="exportInvoiceWord()">📝 Export Invoice Word</button>
+  </div>
+
+  <div class="card" id="invoiceContent">
+    <h2>Client Invoice</h2>
+    <p>Select a booking.</p>
+  </div>
+</section>
+
+
+<!-- COMPANY -->
+<section id="company" class="page">
+  <div class="card">
+    <h3 class="section-title">Company Profile</h3>
+
+    <div class="grid">
+      <div class="form-group"><label>Company Name</label><input id="companyName"></div>
+      <div class="form-group"><label>GST Number</label><input id="companyGST"></div>
+      <div class="form-group"><label>Phone</label><input id="companyPhone"></div>
+      <div class="form-group"><label>Email</label><input id="companyEmail"></div>
+      <div class="form-group"><label>Currency</label><input value="INR (₹)" disabled></div>
+      <div class="form-group"><label>Invoice Prefix</label><input id="invoicePrefix"></div>
+    </div>
+
+    <div class="form-group">
+      <label>Company Logo</label>
+      <input id="companyLogoInput" type="file" accept="image/png,image/jpeg,image/webp" onchange="loadCompanyLogo(event)">
+      <small style="color:#64748b">PNG, JPG or WEBP. The logo will appear on invoices, reports, print, PDF and Word exports.</small>
+      <br><img id="companyLogoPreview" class="company-logo-preview" alt="Company Logo Preview">
+      <div style="margin-top:8px"><button type="button" class="btn btn-secondary btn-small" onclick="resetCompanyLogo()">Restore Time2Holidays Logo</button></div>
+    </div>
+
+    <div class="form-group">
+      <label>Company Address</label>
+      <textarea id="companyAddress"></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveCompany()">Save Company Profile</button>
+  </div>
+</section>
+
+
+<!-- DATABASE -->
+<section id="deletedRecords" class="page">
+  <h2>🗑 Deleted Records History</h2>
+  <div class="card"><p>View records deleted in the past. You can restore a record or permanently remove it from the history.</p>
+  <div class="top-actions"><button class="btn btn-secondary" onclick="renderDeletedRecords()">🔄 Refresh</button><button class="btn btn-danger" onclick="clearDeletedHistory()">🗑 Clear Deleted History</button></div></div>
+  <div class="card"><div class="table-wrap"><table><thead><tr><th>Deleted Date & Time</th><th>Record Type</th><th>Record Details</th><th>Deleted By</th><th>Action</th></tr></thead><tbody id="deletedRecordsTable"></tbody></table></div></div>
+</section>
+
+<section id="database" class="page">
+  <div class="card">
+    <h3 class="section-title">Database Backup & Restore</h3>
+    <button class="btn btn-success" onclick="backupDatabase()">⬇ Download Backup</button>
+    <br><br>
+    <label>Restore Database JSON</label>
+    <input type="file" accept=".json" onchange="restoreDatabase(event)">
+    <br><br>
+     </div>
+
+  <div class="card">
+    <h3 class="section-title">CSV Import</h3>
+    <p>You can import additional supplier, airport, or airline data.</p>
+
+    <div class="grid">
+      <div>
+        <label>Import Suppliers CSV</label>
+        <input type="file" accept=".csv" onchange="importCSV(event,'suppliers')">
+      </div>
+      <div>
+        <label>Import Airports CSV</label>
+        <input type="file" accept=".csv" onchange="importCSV(event,'airports')">
+      </div>
+      <div>
+        <label>Import Airlines CSV</label>
+        <input type="file" accept=".csv" onchange="importCSV(event,'airlines')">
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+
+<!-- BOOKING MODAL -->
+<div class="modal" id="bookingModal">
+<div class="modal-content">
+
+<div class="top-actions">
+  <h2 style="flex:1;margin:0">Booking Form</h2>
+  <button class="btn btn-danger" onclick="closeModal('bookingModal')">✕ Close</button>
+</div>
+
+<input type="hidden" id="editBookingId">
+
+<div class="card">
+<h3 class="section-title">Booking & Client Information</h3>
+
+<div class="grid">
+  <div class="form-group">
+    <label>Booking Date</label>
+    <input type="date" id="bkgDate">
+  </div>
+
+  <div class="form-group">
+    <label>Booking Status</label>
+    <select id="bkgStatus">
+      <option>Pending</option>
+      <option>Confirmed</option>
+      <option>Hold</option>
+      <option>Cancelled</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Client Name *</label>
+    <input id="bookingClientName" placeholder="Enter client full name">
+  </div>
+
+  <div class="form-group">
+    <label>Client Phone</label>
+    <input id="bookingClientPhone" placeholder="Enter phone number">
+  </div>
+
+  <div class="form-group">
+    <label>Client Email</label>
+    <input type="email" id="bookingClientEmail" placeholder="Enter email address">
+  </div>
+
+  <div class="form-group">
+    <label>Client City</label>
+    <input id="bookingClientCity" placeholder="Enter client city">
+  </div>
+
+  <div class="form-group" style="grid-column:1/-1">
+    <label>Client Address</label>
+    <textarea id="bookingClientAddress" placeholder="Enter client address"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Destination Country</label>
+    <input id="bkgCountry" placeholder="India / Thailand / UAE etc.">
+  </div>
+
+  <div class="form-group">
+    <label>Destination City</label>
+    <input id="bkgCity">
+  </div>
+
+  <div class="form-group">
+    <label>Company Invoice No.</label>
+    <input id="companyInvoice">
+  </div>
+</div>
+</div>
+
+
+<div class="card">
+<h3 class="section-title">Passengers (Maximum 10)</h3>
+
+<div class="top-actions">
+  <button class="btn btn-primary btn-small" onclick="addPassenger()">+ Add Passenger</button>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Passenger Name</th>
+<th>Type</th>
+<th>Age</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="passengerRows"></tbody>
+</table>
+</div>
+</div>
+
+
+<div class="card">
+<h3 class="section-title">Flight Services</h3>
+<button class="btn btn-primary btn-small" onclick="addFlight()">+ Add Flight</button>
+<div id="flightServices"></div>
+</div>
+
+
+<div class="card">
+<h3 class="section-title">Hotel Services</h3>
+<button class="btn btn-primary btn-small" onclick="addHotel()">+ Add Hotel</button>
+<div id="hotelServices"></div>
+</div>
+
+
+<div class="card">
+<h3 class="section-title">Transfer Services</h3>
+<button class="btn btn-primary btn-small" onclick="addTransfer()">+ Add Transfer</button>
+<div id="transferServices"></div>
+</div>
+
+
+<div class="card">
+<h3 class="section-title">Payment Information</h3>
+
+<div class="grid">
+  <div class="form-group">
+    <label>Client Total Sale (₹)</label>
+    <input type="number" id="clientSale" value="0" oninput="calculateBooking()">
+  </div>
+
+  <div class="form-group">
+    <label>Client Amount Received (₹)</label>
+    <input type="number" id="clientPaid" value="0">
+  </div>
+
+  <div class="form-group">
+    <label>Supplier Total Cost (₹)</label>
+    <input type="number" id="supplierCost" value="0" readonly>
+  </div>
+
+  <div class="form-group">
+    <label>Supplier Amount Paid (₹)</label>
+    <input type="number" id="supplierPaid" value="0">
+  </div>
+
+  <div class="form-group">
+    <label>Supplier Invoice Number</label>
+    <input id="supplierInvoice">
+  </div>
+
+  <div class="form-group">
+    <label>Supplier Due Date</label>
+    <input type="date" id="supplierDueDate">
+  </div>
+</div>
+
+<div class="notice">
+  <strong>Internal Calculation:</strong>
+  Profit = Client Sale − Supplier Cost.
+  GST = 5% of Profit when Profit is positive.
+</div>
+
+<div class="grid">
+  <div><strong>Estimated Profit:</strong> <span id="profitPreview">₹0</span></div>
+  <div><strong>GST 5%:</strong> <span id="gstPreview">₹0</span></div>
+  <div><strong>Net Profit:</strong> <span id="netProfitPreview">₹0</span></div>
+</div>
+</div>
+
+<div class="card">
+<h3 class="section-title">Booking Notes</h3>
+<div class="grid">
+  <div class="form-group">
+    <label>Remark</label>
+    <textarea id="clientManualNotes" placeholder="Notes that will be visible on the client invoice..."></textarea>
+    <small style="color:#15803d">✓ This note will be shown on the Client Invoice.</small>
+  </div>
+  <div class="form-group">
+    <label>Company Internal Notes</label>
+    <textarea id="companyInternalNotes" placeholder="Internal company notes, follow-up details or staff instructions..."></textarea>
+    <small style="color:#dc2626">🔒 Internal use only. This note will NOT be shown on the Client Invoice.</small>
+  </div>
+</div>
+</div>
+
+<button class="btn btn-success" onclick="saveBooking()">💾 Save Booking</button>
+<button class="btn btn-secondary" onclick="closeModal('bookingModal')">Cancel</button>
+
+</div>
+</div>
+
+
+<!-- SUPPLIER MODAL -->
+<div class="modal" id="supplierModal">
+<div class="modal-content" style="max-width:700px">
+<div class="top-actions">
+<h2 style="flex:1;margin:0">Supplier Details</h2>
+<button class="btn btn-danger" onclick="closeModal('supplierModal')">✕</button>
+</div>
+
+<input type="hidden" id="editSupplierId">
+
+<div class="grid">
+<div class="form-group"><label>Supplier Name *</label><input id="supplierName"></div>
+<div class="form-group"><label>Contact Person</label><input id="supplierContact"></div>
+<div class="form-group"><label>Phone</label><input id="supplierPhone"></div>
+<div class="form-group"><label>Email</label><input id="supplierEmail"></div>
+<div class="form-group"><label>GST Number</label><input id="supplierGST"></div>
+</div>
+
+<div class="form-group"><label>Address</label><textarea id="supplierAddress"></textarea></div>
+
+<button class="btn btn-success" onclick="saveSupplier()">Save Supplier</button>
+</div>
+</div>
+
+
+<script>
+/* =====================================================
+   TIME2HOLIDAYS BOOKING MANAGEMENT SYSTEM
+   LocalStorage Database
+===================================================== */
+
+const DB_KEY = "time2holidays_booking_db_v1";
+const USER_DB_KEY = "time2holidays_users_v1";
+const SESSION_KEY = "time2holidays_session_v1";
+const DEFAULT_ADMIN = {id:"9811630830", password:"Noida@2026", name:"Administrator", role:"admin"};
+
+function loadUsers(){
+  let users=[];
+  try{ users=JSON.parse(localStorage.getItem(USER_DB_KEY)||"[]"); }catch(e){ users=[]; }
+  if(!users.some(u=>u.id===DEFAULT_ADMIN.id)){
+    users.unshift(DEFAULT_ADMIN);
+    localStorage.setItem(USER_DB_KEY,JSON.stringify(users));
+  }
+  return users;
+}
+function currentUser(){ try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");}catch(e){return null;} }
+function login(){
+  const id=document.getElementById("loginId").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  const user=loadUsers().find(u=>u.id===id && u.password===password);
+  if(!user){ document.getElementById("loginError").textContent="Invalid Login ID or Password."; return; }
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify({id:user.id,name:user.name||user.id,role:user.role||"user"}));
+  applyLoginState();
+}
+function logout(){ sessionStorage.removeItem(SESSION_KEY); applyLoginState(); }
+function applyLoginState(){
+  const user=currentUser();
+  const screen=document.getElementById("loginScreen");
+  if(!user){ screen.style.display="flex"; document.querySelector(".app").style.display="none"; document.querySelector("header").style.display="none"; return; }
+  screen.style.display="none"; document.querySelector(".app").style.display="grid"; document.querySelector("header").style.display="flex";
+  document.getElementById("loggedInUser").textContent=(user.name||user.id)+" ("+(user.role||"user")+")";
+  document.querySelectorAll(".admin-only").forEach(el=>el.style.display=user.role==="admin"?"block":"none");
+}
+function createUser(){
+  const me=currentUser(); if(!me || me.role!=="admin"){ alert("Admin access required."); return; }
+  const id=document.getElementById("newUserId").value.trim();
+  const password=document.getElementById("newUserPassword").value;
+  const name=document.getElementById("newUserName").value.trim();
+  const role=document.getElementById("newUserRole").value;
+  if(!id||!password){ alert("Please enter Login ID and Password."); return; }
+  const users=loadUsers();
+  if(users.some(u=>u.id===id)){ alert("This Login ID already exists."); return; }
+  users.push({id,password,name:name||id,role}); localStorage.setItem(USER_DB_KEY,JSON.stringify(users));
+  document.getElementById("newUserId").value=""; document.getElementById("newUserPassword").value=""; document.getElementById("newUserName").value="";
+  renderUsers(); alert("User created successfully.");
+}
+function renderUsers(){
+  const me=currentUser(); if(!me||me.role!=="admin") return;
+  const users=loadUsers();
+  document.getElementById("userTable").innerHTML=users.map(u=>`<tr><td>${escapeHTML(u.id)}</td><td>${escapeHTML(u.name||"")}</td><td>${escapeHTML(u.role||"user")}</td><td>${u.id===DEFAULT_ADMIN.id?"Primary Admin":`<button class="btn btn-danger btn-small" onclick="deleteUser('${escapeHTML(u.id)}')">Delete</button>`}</td></tr>`).join("");
+}
+const DELETED_HISTORY_KEY="time2holidays_deleted_history";
+function loadDeletedHistory(){ try{return JSON.parse(localStorage.getItem(DELETED_HISTORY_KEY)||"[]");}catch(e){return [];} }
+function saveDeletedHistory(x){ localStorage.setItem(DELETED_HISTORY_KEY,JSON.stringify(x)); }
+function addDeletedRecord(type,record){ const me=currentUser(); const h=loadDeletedHistory(); h.unshift({id:"del_"+Date.now()+"_"+Math.random().toString(36).slice(2),type,record,deletedAt:new Date().toLocaleString(),deletedBy:me?(me.name||me.id):"Unknown"}); saveDeletedHistory(h); }
+function deletedRecordSummary(x){const r=x.record||{}; return r.name||r.clientName||r.id||"Record";}
+function renderDeletedRecords(){ const el=document.getElementById("deletedRecordsTable"); if(!el)return; const h=loadDeletedHistory(); el.innerHTML=h.length?h.map(x=>`<tr><td>${escapeHTML(x.deletedAt||"")}</td><td>${escapeHTML(x.type||"")}</td><td>${escapeHTML(deletedRecordSummary(x))}</td><td>${escapeHTML(x.deletedBy||"")}</td><td><button class="btn btn-primary btn-small" onclick="restoreDeletedRecord('${x.id}')">Restore</button> <button class="btn btn-danger btn-small" onclick="permanentlyRemoveDeletedRecord('${x.id}')">Remove</button></td></tr>`).join(""):`<tr><td colspan="5">No deleted records found.</td></tr>`; }
+function restoreDeletedRecord(id){ const h=loadDeletedHistory(); const x=h.find(a=>a.id===id); if(!x)return; if(!confirm("Restore this deleted record?"))return; if(x.type==="Booking") db.bookings.push(x.record); else if(x.type==="Supplier") db.suppliers.push(x.record); else if(x.type==="User"){const u=loadUsers();u.push(x.record);localStorage.setItem(USER_DB_KEY,JSON.stringify(u));} else {alert("This record type cannot be restored automatically.");return;} saveDB(); saveDeletedHistory(h.filter(a=>a.id!==id)); renderDeletedRecords(); renderBookings(); renderSuppliers(); renderUsers(); alert("Record restored successfully."); }
+function permanentlyRemoveDeletedRecord(id){ if(!confirmPermanentDelete("this deleted history record"))return; saveDeletedHistory(loadDeletedHistory().filter(a=>a.id!==id)); renderDeletedRecords(); }
+function clearDeletedHistory(){ if(!confirmPermanentDelete("all deleted records history"))return; saveDeletedHistory([]); renderDeletedRecords(); alert("Deleted records history cleared."); }
+
+function deleteUser(id){
+  const me=currentUser();
+  if(!me || me.role!=="admin"){ alert("Admin access required."); return; }
+  if(!confirmPermanentDelete("this user record")) return;
+  const deletedUser=loadUsers().find(u=>u.id===id); if(deletedUser) addDeletedRecord("User",deletedUser);
+  const users=loadUsers().filter(u=>u.id!==id);
+  localStorage.setItem(USER_DB_KEY,JSON.stringify(users));
+  renderUsers();
+  alert("User record deleted successfully.");
+}
+
+
+let db = {
+  company: {
+    name: "Time2Holidays Pvt. Ltd.",
+    gst: "",
+    phone: "",
+    email: "",
+    address: "",
+    invoicePrefix: "T2H",
+    logo: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZMAAAA3CAMAAAD+OFcfAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAVBQTFRF////8Pb4gK3If6zHgKzHz+Dpq8naf6vGcaPCsczdwNfjr8vb3unvkLjQ3+rx8PX3wdbk8Pb5zt/pkbfPz+Dqwdfl7/T3fqrGdabEgq3In8HWQYOucKLBkLfPoMHXoMLWfqvHAFqRAFuSIG+f8/f62ufvn8HVH3CgEWWYMHmmX5e5DmSXT460v9bjYZi6f6zIYJe6e6rHZZy8bqHAMnqnj7fP3+nwwNbkD2SYMHmlQIKsEWWZP4StS4uzJnKhUI61rsvbEGWYv9XjMHmnfqvIr8zcQIOtUY60E2SYYZi7L3ilQIKrQYStb6LBH26ewNfkL3imwNXjUY+1MHel3unwT42zMXmmIW+fT4yyEmSYIG+gjrfPkLjPYJi6YJi5QIOubqLBj7jQoMHVEWSYVpK2N32oDGOX+/7/H2+fm77UjbXO6/L1rsvcrMnb8vb5wtfk4g5f6gAACdJJREFUeJztWmtb28gVFrJpN8JBzq6hrdkFz6Q1BiNMG4xZx21IQtgEQzYJTdqk6e6m93v//7fOe+aikTQjLtlPfeYFLHk013M/R0RRQEBAQEBAQEBAQEBAQEBAQMDHYyFuAHGz2YzlbaPZoNvFKPrBDz+5hU5JY2nhknlatxvL+j5ty4nixp2aEZ/SUnEjbqd6L5818kkKSJqNJfOlsyIGxvgVSwi0F9WDVXGI1Dme8KMf/wSXbtzEuvIXH5ikcXvFPTJeW/u8fPYkjr9w9l6P4w15t9zeaGDmz2r240WPcfxwJj4BeY/r3einuPlZFPVF0+Zi7TTdAWMDSc/+FtOTse2aIUNmsLVh9rLj6ppiOnmb7Q6wV9okZ2qrm/Eqno3Elz3vej8Xg34hOMr19vSB1Uxc7aKAXTy959j5loPYe+iciZv1fTP5uIYCPoxYAZxrcgoiHODrJIp2QIHDOk3p0ACsv/ylYa+4TmvGaIJQ5zXwcyRunSMyfdh0V4kNtyQI9/c7keTpzLveL0X/X8m5zLLm2PLyoEzoIymhR8XWKcnRanmBbUz08E60ui8JSdOOaijgQzKUY7XkMXPWvWgZt4/UHtjjyiYMWofEiGPc2ed8+KRm5Z4WAuo7WAVPODtxbhK9EnHzVS46JZI+bZF81UjBM6lsiaVivMQatlsckg5kj8Pi0dNTNO6XGAiWsKGQjblFSHz/GEBlCmJGPBF6ciYX2fUNvPNYUqZH6itktZtdfdWsf/4co4XR6fn05GulJ0dEou2+bUc7T86HoPA26Qn368kzqKOaq/KwdUSGhxXd2TkJlvh7UOydvkDfIlO2sTWw4Igm2uvXG/srAjyZ2w3Ek5dRNFOyeO4Z+EoJRU8aJF83L1Ih/vwQPPHpCaYVerKDYyeVxy0wdVNqXi1PuOBJxl08iZT9LZh/WnY0rrSLHV+g8W6uBAtroNBD8OEYd7/2n/ZaqBxJ264TbSy67nFKUYWeLDJlZK6HJcg/hMIj54nSEyjsa8fzsZR9HMBvu/aknmAu7uzwRoqVQfob0SBkZAbrVZZ6slT3NVPSLVDoDSnOb8X88+h7giBJUUzBEz4hA8mfv4WPceljH7t7B6b1DPGuiUzS9LiGJxysPmFup5mBIiQcdf5E8iRz2i5gVnLJ53DZQuDTtzBU5d6SKZIg6T7E8lTasqnk5PeDip60lD8BKWZkJiviEkWLT6G0HWm7bsiTrqDpBW2AO0+TKZ7MSpJsnnOlJ3Vx1zOjJ9zNk6l0iRoJwp7f4Q5qXF13z2gKtMSwhAxshYM3BY50Zje0LH8yJzVi++XgKx2gU58cybE4B7uB7creCWrsyA34/AkHq6ekjI7n0FLyRzU+fk/6k8SrJycFnqRQfaV1O8x1LGLKYUewBKZXs4Qieta4Sa7oQCVs0TyZSgWiPawVx9B+mDiJvIAn/H1bYIKP9gqBbs2QhcnKpD0Rz1fwudH4PeWYvEuxMH88WWnTAFxW8CEabms9ER16jp0rOsOx1eiJoHG97SpYxnuwXCoMS4di7N1KUWKb4uSNxwj7LoywtmQgvLVmEDe+WPFuqx4wHQU9OQAp4E84WciFF6BdMSKmPBe5N7oq22XnOnn4L1P6o9376jsv5hjIv0fFZEH2MpPAn3BKgirQPBFdL4+7GPfw5IyOoLCIZfv6GxnuB5URPbPNC0svusyR+Rx+464aXYJe2TktY96XUGpp1NKH5WrBGFQjrZX+xE6S823RBaFIcld+5YrchuBDosWx1Wo4atLYzO9PVCxV70+g5t9e5uPN7F8W6zw72NJRZUhfba9YQ+qc2EQweO/dmh895shP+EvSE+l7qVZkVRqeED0pIGRkVhJmFQXUVX7AKhyV9EDR/+1stGo2INs0R+wBSdni50ik7F+Wn1xqu3I9wVRDS/YhjuxpVdT7JD2VIltrvbcznc3ms7wwwm5UZxmVzTH0BLHwzDiaLgg80FF5Z5CzSK5JxBknWQJk5g8/qgLDLr4b03fdxYrSUBs5TbIsy8fJTmMTC3PnwZI87jpzPJZ4pn0898RdZznZIHz8WyoYx81m3IwbD3DAteogETCzN941JVrJGKErG1xWXK+imjPiqAWekOfjau70HQRAmTJGip/V5YxklJc8D4ER90T2FDrIWJi7/EnGdM55FZ749YRxxZN9ZXksd+aR9J5vzyWMbxSRVtPgA2zkkSyq6bPCzapKz4ltSbm0XXUrHyM8qdvAyOejEeuCJ3OPnmSc6Zyxlif1eXwed/VM1bkUqVSTZiFHNXGFBW5HEFdGRU8OmNSTqcWsFBUIKkfuYpVTHSAycr+1elKxja4NOGmqa/Uzp6hadYBL8nhe6+PndIRI1ZTs+MTc8s2y+akERj7cjCej8vTITzjV6nmeX3eouH9PllSGxuvJ/KSFnR/55v8onkBPpsz90utc0hm1fn8GjVq99CcePUEJhSzxmjuU6LnqsGise0tkwFilknkFjMr5yTIo/MjkjArkJNnnJDq5Kitri0v5xUK+fU/pJN+AJ5bVJZtzLB1XHq8j1ninSpFN3+zadnF3frKwy9WBMM0L1wxwOKz0SujSQ+X9SKyuiVF5evLxqrZi0eqDUeX1vFGl85TrP33V/INKxicyjRcJu9zWfht5ucjyV/AQlwmyddG2UGMHtI8nxWWDV/F7qhOgFrAR724yJYOrQ7jlzW9iWUOYTGQRQfwiUrTrXWZ3apalxiu8vqJTHuC1nPNVVAsm4o9F6+WoB2VtjZUJTb/RoD1ydv20sZIGt2ADX0pnbuvntko/7LBc+pMovSjaYf0qmbMPsmBmBzR2J9S7KsZTI9FC1i3nYcbU07h12/TbT3mn4OMLI60hw5aYZI1736KTIhYD4mrtYJyvXtqp/38FvKjWhbm0XfPyuqe0xKndxJQLS7+rkEzy5bVOCVVDpfwieeJ9H89JdJMX1cMiKOvJjt1hwTnnlBHP/yQuf1Z6ko+0bvj8IJKvHrzGiN6CFyzQcZlodApe4LX6KP+rxVUA71d8Y/QXMdNfpXh8sNtXYc2mBbfxmmmFb43nelN2FtunOpAS4TLfhN68ljG8+yXlQxFOqNsn239jJkyVi+yM8610v3perWpQYvt3cfmHLBHqn5wdjD/fk7TO7MiljAXB87eFc4OFxVBwbAliTobp+Y3qXSLfzIq1z3/+69//wbWTlL3TYlKyuGmSLdvfEsrHVbournCen6oG3Zo/Fl1XaVaPFxTz2UdatCZwvK1ZpBqAXF4uSZu9deu/uBxk1g50ucCaJRm1vBSKOttnpS12KjuwD6auNTMGBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBPwf4X973RmzZ3KFtgAAAABJRU5ErkJggg=="
+  },
+  clients: [],
+  suppliers: [],
+  bookings: [],
+  airports: [
+    {code:"DEL",name:"Indira Gandhi International Airport",city:"Delhi"},
+    {code:"BOM",name:"Chhatrapati Shivaji Maharaj International Airport",city:"Mumbai"},
+    {code:"BLR",name:"Kempegowda International Airport",city:"Bengaluru"},
+    {code:"MAA",name:"Chennai International Airport",city:"Chennai"},
+    {code:"CCU",name:"Netaji Subhas Chandra Bose International Airport",city:"Kolkata"},
+    {code:"HYD",name:"Rajiv Gandhi International Airport",city:"Hyderabad"},
+    {code:"GOI",name:"Goa International Airport",city:"Goa"},
+    {code:"COK",name:"Cochin International Airport",city:"Kochi"},
+    {code:"PNQ",name:"Pune Airport",city:"Pune"},
+    {code:"AMD",name:"Sardar Vallabhbhai Patel International Airport",city:"Ahmedabad"},
+    {code:"LKO",name:"Chaudhary Charan Singh International Airport",city:"Lucknow"},
+    {code:"JAI",name:"Jaipur International Airport",city:"Jaipur"}
+  ],
+  airlines: [
+    {name:"Air India",code:"AI"},
+    {name:"IndiGo",code:"6E"},
+    {name:"Air India Express",code:"IX"},
+    {name:"Akasa Air",code:"QP"},
+    {name:"SpiceJet",code:"SG"},
+    {name:"Alliance Air",code:"9I"},
+    {name:"Star Air",code:"S5"},
+    {name:"Fly91",code:"IC"}
+  ]
+};
+
+function uid(prefix="ID"){
+  return prefix + "-" + Date.now().toString().slice(-7) + Math.floor(Math.random()*1000);
+}
+
+const DEFAULT_COMPANY_LOGO = "data:image/png;base64,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";
+
+function getCompanyLogo(){ return (db && db.company && db.company.logo) ? db.company.logo : DEFAULT_COMPANY_LOGO; }
+function refreshCompanyLogoUI(){
+  const logo=getCompanyLogo();
+  const h=document.getElementById('headerLogo'); if(h) h.src=logo;
+  const p=document.getElementById('companyLogoPreview'); if(p) p.src=logo;
+}
+function loadCompanyLogo(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+  if(file.size>2*1024*1024){ alert('Please select a logo smaller than 2 MB.'); event.target.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=()=>{ db.company.logo=reader.result; refreshCompanyLogoUI(); saveDB(); };
+  reader.readAsDataURL(file);
+}
+function resetCompanyLogo(){ db.company.logo=DEFAULT_COMPANY_LOGO; const i=document.getElementById('companyLogoInput'); if(i)i.value=''; refreshCompanyLogoUI(); saveDB(); }
+
+function loadDB(){
+  const saved = localStorage.getItem(DB_KEY);
+  if(saved){
+    try{
+      const data = JSON.parse(saved);
+      db = {...db,...data};
+      db.company = {...{
+        name:"Time2Holidays Pvt. Ltd.",
+        gst:"",
+        phone:"",
+        email:"",
+        address:"",
+        invoicePrefix:"T2H",
+        logo:"data:image/png;base64,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"
+      },...(data.company||{})};
+    }catch(e){}
+  }else{
+    seedSuppliers();
+    saveDB();
+  }
+}
+
+function saveDB(){
+  localStorage.setItem(DB_KEY,JSON.stringify(db));
+}
+
+function seedSuppliers(){
+  const names = [
+    "MakeMyTrip","Goibibo","EaseMyTrip","Yatra",
+    "Cleartrip","ixigo","Thomas Cook India","SOTC Travel"
+  ];
+
+  db.suppliers = names.map(name=>({
+    id:uid("SUP"),
+    name,
+    contact:"",
+    phone:"",
+    email:"",
+    gst:"",
+    address:""
+  }));
+}
+
+function money(value){
+  return new Intl.NumberFormat("en-IN",{
+    style:"currency",
+    currency:"INR",
+    maximumFractionDigits:2
+  }).format(Number(value||0));
+}
+
+function escapeHTML(value){
+  return String(value||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+function showPage(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll(".nav").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+
+  if(id==="dashboard") renderDashboard();
+  if(id==="bookings") renderBookings();
+  if(id==="suppliers") renderSuppliers();
+  if(id==="reports") renderReports();
+  if(id==="invoicePage") loadInvoiceSelect();
+  if(id==="company") loadCompanyForm();
+  if(id==="users") renderUsers();
+  if(id==="deletedRecords") renderDeletedRecords();
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add("show");
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove("show");
+}
+
+/* =========================
+   PASSWORD-PROTECTED DELETE
+   All destructive saved-data actions must pass through this function.
+========================= */
+function verifyDeletePassword(actionLabel){
+  const me=currentUser();
+  if(!me){ alert("Please login first."); return false; }
+  const password=prompt("SECURITY CONFIRMATION\n\nEnter your password to permanently "+actionLabel+".");
+  if(password===null) return false;
+  const users=loadUsers();
+  const user=users.find(u=>u.id===me.id && u.password===password);
+  if(!user){
+    alert("Incorrect password. No data was deleted.");
+    return false;
+  }
+  return true;
+}
+function confirmPermanentDelete(actionLabel, extraMessage=""){
+  const msg="WARNING: "+actionLabel+" will be permanently deleted and cannot be recovered."+ (extraMessage ? "\n\n"+extraMessage : "");
+  if(!confirm(msg)) return false;
+  return verifyDeletePassword(actionLabel);
+}
+
+
+/* =========================
+   COMPANY
+========================= */
+
+function loadCompanyForm(){
+  document.getElementById("companyName").value=db.company.name||"";
+  document.getElementById("companyGST").value=db.company.gst||"";
+  document.getElementById("companyPhone").value=db.company.phone||"";
+  document.getElementById("companyEmail").value=db.company.email||"";
+  document.getElementById("companyAddress").value=db.company.address||"";
+  document.getElementById("invoicePrefix").value=db.company.invoicePrefix||"T2H";
+  refreshCompanyLogoUI();
+}
+
+function saveCompany(){
+  db.company={
+    name:document.getElementById("companyName").value,
+    gst:document.getElementById("companyGST").value,
+    phone:document.getElementById("companyPhone").value,
+    email:document.getElementById("companyEmail").value,
+    address:document.getElementById("companyAddress").value,
+    invoicePrefix:document.getElementById("invoicePrefix").value||"T2H",
+    logo:getCompanyLogo()
+  };
+  refreshCompanyLogoUI();
+  saveDB();
+  document.getElementById("headerCompany").textContent=(db.company.name||"Time2Holidays")+" | INR (₹)";
+  alert("Company profile saved.");
+}
+
+
+
+/* =========================
+   SUPPLIERS
+========================= */
+
+function openSupplierModal(supplier=null){
+  document.getElementById("editSupplierId").value=supplier?supplier.id:"";
+  document.getElementById("supplierName").value=supplier?supplier.name:"";
+  document.getElementById("supplierContact").value=supplier?supplier.contact:"";
+  document.getElementById("supplierPhone").value=supplier?supplier.phone:"";
+  document.getElementById("supplierEmail").value=supplier?supplier.email:"";
+  document.getElementById("supplierGST").value=supplier?supplier.gst:"";
+  document.getElementById("supplierAddress").value=supplier?supplier.address:"";
+  openModal("supplierModal");
+}
+
+function saveSupplier(){
+  const name=document.getElementById("supplierName").value.trim();
+
+  if(!name){
+    alert("Please enter supplier name.");
+    return;
+  }
+
+  const id=document.getElementById("editSupplierId").value;
+
+  const supplier={
+    id:id||uid("SUP"),
+    name,
+    contact:document.getElementById("supplierContact").value,
+    phone:document.getElementById("supplierPhone").value,
+    email:document.getElementById("supplierEmail").value,
+    gst:document.getElementById("supplierGST").value,
+    address:document.getElementById("supplierAddress").value
+  };
+
+  if(id){
+    db.suppliers=db.suppliers.map(s=>s.id===id?supplier:s);
+  }else{
+    db.suppliers.push(supplier);
+  }
+
+  saveDB();
+  closeModal("supplierModal");
+  renderSuppliers();
+}
+
+function supplierUsage(id){
+  let totalCost=0;
+  let totalPaid=0;
+  let bookings=0;
+
+  db.bookings.forEach(b=>{
+    const services=[...(b.flights||[]),...(b.hotels||[]),...(b.transfers||[])];
+
+    const used=services.some(s=>s.supplierId===id);
+
+    if(used){
+      bookings++;
+      services.filter(s=>s.supplierId===id).forEach(s=>{
+        totalCost+=Number(s.cost||0);
+      });
+    }
+  });
+
+  db.bookings.forEach(b=>{
+    if((b.supplierPaid||0)>0){
+      const services=[...(b.flights||[]),...(b.hotels||[]),...(b.transfers||[])];
+      if(services.some(s=>s.supplierId===id)){
+        totalPaid+=Number(b.supplierPaid||0);
+      }
+    }
+  });
+
+  return {bookings,totalCost,totalPaid,due:Math.max(0,totalCost-totalPaid)};
+}
+
+function renderSuppliers(){
+  const search=(document.getElementById("supplierSearch")?.value||"").toLowerCase();
+
+  const rows=db.suppliers.filter(s=>
+    [s.name,s.contact,s.phone,s.email,s.gst]
+    .join(" ").toLowerCase().includes(search)
+  ).map(s=>{
+    const usage=supplierUsage(s.id);
+
+    return `<tr>
+      <td>${escapeHTML(s.name)}</td>
+      <td>${escapeHTML(s.contact)}</td>
+      <td>${escapeHTML(s.phone)}</td>
+      <td>${escapeHTML(s.email)}</td>
+      <td>${escapeHTML(s.gst)}</td>
+      <td>${usage.bookings}</td>
+      <td>${money(usage.due)}</td>
+      <td>
+        <button class="btn btn-primary btn-small" onclick="editSupplier('${s.id}')">Edit</button>
+        <button class="btn btn-danger btn-small" onclick="deleteSupplier('${s.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("supplierTable").innerHTML=
+    rows||`<tr><td colspan="8">No suppliers found.</td></tr>`;
+}
+
+function editSupplier(id){
+  openSupplierModal(db.suppliers.find(s=>s.id===id));
+}
+
+function deleteSupplier(id){
+  const used=db.bookings.some(b=>{
+    return [...(b.flights||[]),...(b.hotels||[]),...(b.transfers||[])]
+      .some(s=>s.supplierId===id);
+  });
+
+  if(used){
+    alert("Supplier is used in bookings and cannot be deleted. Remove or change the related booking service first.");
+    return;
+  }
+
+  if(!confirmPermanentDelete("this supplier record")) return;
+  const deletedSupplier=db.suppliers.find(s=>s.id===id); if(deletedSupplier) addDeletedRecord("Supplier",deletedSupplier);
+  db.suppliers=db.suppliers.filter(s=>s.id!==id);
+  saveDB();
+  renderSuppliers();
+  alert("Supplier record deleted successfully.");
+}
+
+
+/* =========================
+   BOOKING FORM
+========================= */
+
+function getBookingClient(b){
+  // New bookings store client details directly. Legacy bookings still use clientId.
+  if(b && b.clientName) return {
+    id:b.clientId||"", name:b.clientName||"", phone:b.clientPhone||"",
+    email:b.clientEmail||"", city:b.clientCity||"", address:b.clientAddress||""
+  };
+  return db.clients.find(c=>c.id===b?.clientId)||{name:"Unknown",phone:"",email:"",city:"",address:""};
+}
+
+function fillBookingClient(client={}){
+  document.getElementById("bookingClientName").value=client.name||"";
+  document.getElementById("bookingClientPhone").value=client.phone||"";
+  document.getElementById("bookingClientEmail").value=client.email||"";
+  document.getElementById("bookingClientCity").value=client.city||"";
+  document.getElementById("bookingClientAddress").value=client.address||"";
+}
+
+function supplierOptions(selected=""){
+  return `<option value="">Select Supplier</option>`+
+    db.suppliers.map(s=>
+      `<option value="${s.id}" ${s.id===selected?"selected":""}>
+      ${escapeHTML(s.name)}
+      </option>`
+    ).join("");
+}
+
+function airportOptions(selected=""){
+  return `<option value="">Select Airport</option>`+
+    db.airports.map(a=>{
+      const value=`${a.code} - ${a.city}`;
+      return `<option value="${escapeHTML(value)}" ${value===selected?"selected":""}>
+        ${escapeHTML(a.code)} - ${escapeHTML(a.city)} (${escapeHTML(a.name)})
+      </option>`;
+    }).join("");
+}
+
+function airlineOptions(selected=""){
+  return `<option value="">Select Airline</option>`+
+    db.airlines.map(a=>
+      `<option value="${escapeHTML(a.name)}" ${a.name===selected?"selected":""}>
+        ${escapeHTML(a.name)} (${escapeHTML(a.code||"")})
+      </option>`
+    ).join("");
+}
+
+function newBooking(){
+  document.getElementById("editBookingId").value="";
+  document.getElementById("bkgDate").value=new Date().toISOString().slice(0,10);
+  document.getElementById("bkgStatus").value="Pending";
+  document.getElementById("bkgCountry").value="";
+  document.getElementById("bkgCity").value="";
+  document.getElementById("companyInvoice").value=generateInvoiceNo();
+
+  document.getElementById("passengerRows").innerHTML="";
+  document.getElementById("flightServices").innerHTML="";
+  document.getElementById("hotelServices").innerHTML="";
+  document.getElementById("transferServices").innerHTML="";
+
+  document.getElementById("clientSale").value=0;
+  document.getElementById("clientPaid").value=0;
+  document.getElementById("supplierCost").value=0;
+  document.getElementById("supplierPaid").value=0;
+  document.getElementById("supplierInvoice").value="";
+  document.getElementById("supplierDueDate").value="";
+  document.getElementById("clientManualNotes").value="";
+
+  fillBookingClient();
+
+  addPassenger();
+  calculateBooking();
+
+  openModal("bookingModal");
+}
+
+function generateInvoiceNo(){
+  return `${db.company.invoicePrefix||"T2H"}-${new Date().getFullYear()}-${String(db.bookings.length+1).padStart(5,"0")}`;
+}
+
+function addPassenger(data={}){
+  const tbody=document.getElementById("passengerRows");
+
+  if(tbody.children.length>=10){
+    alert("Maximum 10 passenger records allowed.");
+    return;
+  }
+
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td><input class="paxName" value="${escapeHTML(data.name||"")}" placeholder="Passenger full name"></td>
+    <td>
+      <select class="paxType">
+        <option ${data.type==="ADT"?"selected":""}>ADT</option>
+        <option ${data.type==="CHD"?"selected":""}>CHD</option>
+        <option ${data.type==="INF"?"selected":""}>INF</option>
+      </select>
+    </td>
+    <td><input type="number" class="paxAge" value="${data.age||""}" min="0"></td>
+    <td><button class="btn btn-danger btn-small" onclick="this.closest('tr').remove()">Remove</button></td>
+  `;
+
+  tbody.appendChild(tr);
+}
+
+function addFlight(data={}){
+  const container=document.getElementById("flightServices");
+  const div=document.createElement("div");
+  div.className="service-box";
+
+  div.innerHTML=`
+    <div class="top-actions">
+      <strong style="flex:1">✈ Flight Service</strong>
+      <button class="btn btn-danger btn-small" onclick="this.parentElement.parentElement.remove();calculateBooking()">Remove</button>
+    </div>
+
+    <div class="grid">
+      <div class="form-group">
+        <label>Departure Airport</label>
+        <select class="flightDep">${airportOptions(data.departure||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Arrival Airport</label>
+        <select class="flightArr">${airportOptions(data.arrival||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Travel Date</label>
+        <input type="date" class="flightDate" value="${data.date||""}">
+      </div>
+
+      <div class="form-group">
+        <label>Airline</label>
+        <select class="flightAirline">${airlineOptions(data.airline||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Flight Number</label>
+        <input class="flightNo" value="${escapeHTML(data.flightNo||"")}">
+      </div>
+
+      <div class="form-group">
+        <label>Supplier (Internal)</label>
+        <select class="flightSupplier">${supplierOptions(data.supplierId||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Supplier Cost ₹</label>
+        <input type="number" class="serviceCost" value="${data.cost||0}" oninput="calculateBooking()">
+      </div>
+
+      <div class="form-group">
+        <label>Client Selling Price ₹</label>
+        <input type="number" class="serviceSale" value="${data.sale||0}">
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+}
+
+function addHotel(data={}){
+  const container=document.getElementById("hotelServices");
+  const div=document.createElement("div");
+  div.className="service-box";
+
+  div.innerHTML=`
+    <div class="top-actions">
+      <strong style="flex:1">🏨 Hotel Service</strong>
+      <button class="btn btn-danger btn-small" onclick="this.parentElement.parentElement.remove();calculateBooking()">Remove</button>
+    </div>
+
+    <div class="grid">
+      <div class="form-group">
+        <label>Hotel Name</label>
+        <input class="hotelName" value="${escapeHTML(data.name||"")}">
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <input class="hotelCity" value="${escapeHTML(data.city||"")}">
+      </div>
+
+      <div class="form-group">
+        <label>Check-in Date</label>
+        <input type="date" class="hotelCheckin" value="${data.checkin||""}">
+      </div>
+
+      <div class="form-group">
+        <label>Check-out Date</label>
+        <input type="date" class="hotelCheckout" value="${data.checkout||""}">
+      </div>
+
+      <div class="form-group">
+        <label>Supplier (Internal)</label>
+        <select class="hotelSupplier">${supplierOptions(data.supplierId||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Supplier Cost ₹</label>
+        <input type="number" class="serviceCost" value="${data.cost||0}" oninput="calculateBooking()">
+      </div>
+
+      <div class="form-group">
+        <label>Client Selling Price ₹</label>
+        <input type="number" class="serviceSale" value="${data.sale||0}">
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+}
+
+function addTransfer(data={}){
+  const container=document.getElementById("transferServices");
+  const div=document.createElement("div");
+  div.className="service-box";
+
+  div.innerHTML=`
+    <div class="top-actions">
+      <strong style="flex:1">🚗 Transfer Service</strong>
+      <button class="btn btn-danger btn-small" onclick="this.parentElement.parentElement.remove();calculateBooking()">Remove</button>
+    </div>
+
+    <div class="grid">
+      <div class="form-group">
+        <label>Pickup Location</label>
+        <input class="transferPickup" value="${escapeHTML(data.pickup||"")}">
+      </div>
+
+      <div class="form-group">
+        <label>Drop Location</label>
+        <input class="transferDrop" value="${escapeHTML(data.drop||"")}">
+      </div>
+
+      <div class="form-group">
+        <label>Service Date</label>
+        <input type="date" class="transferDate" value="${data.date||""}">
+      </div>
+
+      <div class="form-group">
+        <label>Transfer Type</label>
+        <select class="transferType">
+          <option ${data.type==="Private"?"selected":""}>Private</option>
+          <option ${data.type==="Shared"?"selected":""}>Shared</option>
+          <option ${data.type==="Airport Transfer"?"selected":""}>Airport Transfer</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Supplier (Internal)</label>
+        <select class="transferSupplier">${supplierOptions(data.supplierId||"")}</select>
+      </div>
+
+      <div class="form-group">
+        <label>Supplier Cost ₹</label>
+        <input type="number" class="serviceCost" value="${data.cost||0}" oninput="calculateBooking()">
+      </div>
+
+      <div class="form-group">
+        <label>Client Selling Price ₹</label>
+        <input type="number" class="serviceSale" value="${data.sale||0}">
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+}
+
+function calculateBooking(){
+  let cost=0;
+
+  document.querySelectorAll(".serviceCost").forEach(el=>{
+    cost+=Number(el.value||0);
+  });
+
+  document.getElementById("supplierCost").value=cost;
+
+  const sale=Number(document.getElementById("clientSale").value||0);
+  const profit=sale-cost;
+  const gst=profit>0?profit*0.05:0;
+  const net=profit-gst;
+
+  document.getElementById("profitPreview").textContent=money(profit);
+  document.getElementById("gstPreview").textContent=money(gst);
+  document.getElementById("netProfitPreview").textContent=money(net);
+}
+
+
+/* =========================
+   READ SERVICES
+========================= */
+
+function readPassengers(){
+  return [...document.querySelectorAll("#passengerRows tr")].map(row=>({
+    name:row.querySelector(".paxName").value,
+    type:row.querySelector(".paxType").value,
+    age:row.querySelector(".paxAge").value
+  })).filter(p=>p.name.trim());
+}
+
+function readFlights(){
+  return [...document.querySelectorAll("#flightServices .service-box")].map(box=>({
+    type:"Flight",
+    departure:box.querySelector(".flightDep").value,
+    arrival:box.querySelector(".flightArr").value,
+    date:box.querySelector(".flightDate").value,
+    airline:box.querySelector(".flightAirline").value,
+    flightNo:box.querySelector(".flightNo").value,
+    supplierId:box.querySelector(".flightSupplier").value,
+    cost:Number(box.querySelector(".serviceCost").value||0),
+    sale:Number(box.querySelector(".serviceSale").value||0)
+  }));
+}
+
+function readHotels(){
+  return [...document.querySelectorAll("#hotelServices .service-box")].map(box=>({
+    type:"Hotel",
+    name:box.querySelector(".hotelName").value,
+    city:box.querySelector(".hotelCity").value,
+    checkin:box.querySelector(".hotelCheckin").value,
+    checkout:box.querySelector(".hotelCheckout").value,
+    supplierId:box.querySelector(".hotelSupplier").value,
+    cost:Number(box.querySelector(".serviceCost").value||0),
+    sale:Number(box.querySelector(".serviceSale").value||0)
+  }));
+}
+
+function readTransfers(){
+  return [...document.querySelectorAll("#transferServices .service-box")].map(box=>({
+    type:"Transfer",
+    pickup:box.querySelector(".transferPickup").value,
+    drop:box.querySelector(".transferDrop").value,
+    date:box.querySelector(".transferDate").value,
+    typeName:box.querySelector(".transferType").value,
+    supplierId:box.querySelector(".transferSupplier").value,
+    cost:Number(box.querySelector(".serviceCost").value||0),
+    sale:Number(box.querySelector(".serviceSale").value||0)
+  }));
+}
+
+
+/* =========================
+   SAVE BOOKING
+========================= */
+
+function saveBooking(){
+  const clientName=document.getElementById("bookingClientName").value.trim();
+  const clientPhone=document.getElementById("bookingClientPhone").value.trim();
+  const clientEmail=document.getElementById("bookingClientEmail").value.trim();
+  const clientCity=document.getElementById("bookingClientCity").value.trim();
+  const clientAddress=document.getElementById("bookingClientAddress").value.trim();
+
+  if(!clientName){
+    alert("Please enter client name.");
+    return;
+  }
+
+  const flights=readFlights();
+  const hotels=readHotels();
+  const transfers=readTransfers();
+
+  const serviceCost=[
+    ...flights,...hotels,...transfers
+  ].reduce((sum,s)=>sum+Number(s.cost||0),0);
+
+  const sale=Number(document.getElementById("clientSale").value||0);
+  const profit=sale-serviceCost;
+  const gst=profit>0?profit*0.05:0;
+
+  const editId=document.getElementById("editBookingId").value;
+
+  const booking={
+    id:editId||uid("BKG"),
+    bookingDate:document.getElementById("bkgDate").value,
+    status:document.getElementById("bkgStatus").value,
+    clientName,
+    clientPhone,
+    clientEmail,
+    clientCity,
+    clientAddress,
+    clientManualNotes:document.getElementById("clientManualNotes").value.trim(),
+    companyInternalNotes:document.getElementById("companyInternalNotes").value.trim(),
+    country:document.getElementById("bkgCountry").value,
+    city:document.getElementById("bkgCity").value,
+    invoiceNo:document.getElementById("companyInvoice").value,
+    passengers:readPassengers(),
+    flights,
+    hotels,
+    transfers,
+    clientSale:sale,
+    clientPaid:Number(document.getElementById("clientPaid").value||0),
+    supplierCost:serviceCost,
+    supplierPaid:Number(document.getElementById("supplierPaid").value||0),
+    supplierInvoice:document.getElementById("supplierInvoice").value,
+    supplierDueDate:document.getElementById("supplierDueDate").value,
+    profit,
+    gst,
+    netProfit:profit-gst,
+    updatedAt:new Date().toISOString()
+  };
+
+  if(editId){
+    db.bookings=db.bookings.map(b=>b.id===editId?booking:b);
+  }else{
+    db.bookings.push(booking);
+  }
+
+  saveDB();
+  closeModal("bookingModal");
+  renderBookings();
+  renderDashboard();
+  alert("Booking saved successfully.");
+}
+
+
+/* =========================
+   BOOKINGS LIST
+========================= */
+
+function getClient(ref){
+  if(ref && typeof ref==="object") return getBookingClient(ref);
+  return db.clients.find(c=>c.id===ref)||{name:"Unknown",phone:"",email:"",city:"",address:""};
+}
+
+function getSupplier(id){
+  return db.suppliers.find(s=>s.id===id)||{name:""};
+}
+
+function bookingServicesText(b){
+  const arr=[];
+
+  if(b.flights?.length) arr.push(`Flight (${b.flights.length})`);
+  if(b.hotels?.length) arr.push(`Hotel (${b.hotels.length})`);
+  if(b.transfers?.length) arr.push(`Transfer (${b.transfers.length})`);
+
+  return arr.join(", ")||"-";
+}
+
+function bookingSearchText(b){
+  const suppliers=[
+    ...(b.flights||[]),
+    ...(b.hotels||[]),
+    ...(b.transfers||[])
+  ].map(s=>getSupplier(s.supplierId).name);
+
+  const hotels=(b.hotels||[]).map(h=>h.name);
+  const airlines=(b.flights||[]).map(f=>f.airline);
+
+  return [
+    b.id,
+    getClient(b).name,
+    b.country,
+    b.city,
+    ...suppliers,
+    ...hotels,
+    ...airlines
+  ].join(" ").toLowerCase();
+}
+
+function statusBadge(status){
+  return `<span class="badge ${String(status).toLowerCase()}">${escapeHTML(status)}</span>`;
+}
+
+function renderBookings(){
+  const search=(document.getElementById("bookingSearch")?.value||"").toLowerCase();
+
+  const rows=[...db.bookings]
+    .filter(b=>bookingSearchText(b).includes(search))
+    .sort((a,b)=>String(b.bookingDate).localeCompare(String(a.bookingDate)))
+    .map(b=>`
+      <tr>
+        <td>${b.id}</td>
+        <td>${b.bookingDate||""}</td>
+        <td>${escapeHTML(getClient(b).name)}</td>
+        <td>${escapeHTML(b.country||"")} ${escapeHTML(b.city||"")}</td>
+        <td>${bookingServicesText(b)}</td>
+        <td>${money(b.clientSale)}</td>
+        <td>${money(b.profit)}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>
+          <button class="btn btn-primary btn-small" onclick="editBooking('${b.id}')">Edit</button>
+          <button class="btn btn-success btn-small" onclick="openInvoice('${b.id}')">Invoice</button>
+          <button class="btn btn-danger btn-small" onclick="deleteBooking('${b.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+
+  document.getElementById("bookingTable").innerHTML=
+    rows||`<tr><td colspan="9">No bookings found.</td></tr>`;
+}
+
+function editBooking(id){
+  const b=db.bookings.find(x=>x.id===id);
+  if(!b) return;
+
+  document.getElementById("editBookingId").value=b.id;
+  document.getElementById("bkgDate").value=b.bookingDate||"";
+  document.getElementById("bkgStatus").value=b.status||"Pending";
+  document.getElementById("bkgCountry").value=b.country||"";
+  document.getElementById("bkgCity").value=b.city||"";
+  document.getElementById("companyInvoice").value=b.invoiceNo||"";
+
+  fillBookingClient(getClient(b));
+  document.getElementById("clientManualNotes").value=b.clientManualNotes||"";
+  document.getElementById("companyInternalNotes").value=b.companyInternalNotes||"";
+
+  document.getElementById("passengerRows").innerHTML="";
+  document.getElementById("flightServices").innerHTML="";
+  document.getElementById("hotelServices").innerHTML="";
+  document.getElementById("transferServices").innerHTML="";
+
+  (b.passengers||[]).forEach(addPassenger);
+  (b.flights||[]).forEach(addFlight);
+  (b.hotels||[]).forEach(addHotel);
+  (b.transfers||[]).forEach(addTransfer);
+
+  document.getElementById("clientSale").value=b.clientSale||0;
+  document.getElementById("clientPaid").value=b.clientPaid||0;
+  document.getElementById("supplierPaid").value=b.supplierPaid||0;
+  document.getElementById("supplierInvoice").value=b.supplierInvoice||"";
+  document.getElementById("supplierDueDate").value=b.supplierDueDate||"";
+  document.getElementById("clientManualNotes").value=b.clientManualNotes||"";
+
+  calculateBooking();
+  openModal("bookingModal");
+}
+
+function deleteBooking(id){
+  if(!confirmPermanentDelete("this booking record")) return;
+  const deletedBooking=db.bookings.find(b=>b.id===id); if(deletedBooking) addDeletedRecord("Booking",deletedBooking);
+  db.bookings=db.bookings.filter(b=>b.id!==id);
+  saveDB();
+  renderBookings();
+  renderDashboard();
+  alert("Booking record deleted successfully.");
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+function renderDashboard(){
+  const total=db.bookings.length;
+  const confirmed=db.bookings.filter(b=>b.status==="Confirmed").length;
+  const hold=db.bookings.filter(b=>b.status==="Hold").length;
+
+  const sales=db.bookings.reduce((s,b)=>s+Number(b.clientSale||0),0);
+  const cost=db.bookings.reduce((s,b)=>s+Number(b.supplierCost||0),0);
+  const profit=db.bookings.reduce((s,b)=>s+Number(b.profit||0),0);
+
+  document.getElementById("statBookings").textContent=total;
+  document.getElementById("statConfirmed").textContent=confirmed;
+  document.getElementById("statHold").textContent=hold;
+  document.getElementById("statSales").textContent=money(sales);
+  document.getElementById("statCost").textContent=money(cost);
+  document.getElementById("statProfit").textContent=money(profit);
+
+  const recent=[...db.bookings]
+    .sort((a,b)=>String(b.bookingDate).localeCompare(String(a.bookingDate)))
+    .slice(0,8)
+    .map(b=>`
+      <tr>
+        <td>${b.id}</td>
+        <td>${b.bookingDate||""}</td>
+        <td>${escapeHTML(getClient(b).name)}</td>
+        <td>${escapeHTML(b.country||"")} ${escapeHTML(b.city||"")}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>${money(b.clientSale)}</td>
+      </tr>
+    `).join("");
+
+  document.getElementById("recentBookings").innerHTML=
+    recent||`<tr><td colspan="6">No bookings yet.</td></tr>`;
+}
+
+
+/* =========================
+   REPORTS
+========================= */
+
+function filteredReports(){
+  const from=document.getElementById("reportFrom")?.value||"";
+  const to=document.getElementById("reportTo")?.value||"";
+  const search=(document.getElementById("reportSearch")?.value||"").toLowerCase();
+
+  return db.bookings.filter(b=>{
+    if(from && b.bookingDate<from) return false;
+    if(to && b.bookingDate>to) return false;
+
+    const supplierNames=[
+      ...(b.flights||[]),
+      ...(b.hotels||[]),
+      ...(b.transfers||[])
+    ].map(s=>getSupplier(s.supplierId).name).join(" ");
+
+    const text=[
+      getClient(b).name,
+      supplierNames,
+      b.country,
+      b.city,
+      b.id
+    ].join(" ").toLowerCase();
+
+    return text.includes(search);
+  });
+}
+
+function renderReports(){
+  const bookings=filteredReports();
+
+  const rows=bookings.map((b,index)=>`
+    <tr>
+      <td>${index+1}</td>
+      <td>${b.bookingDate||""}</td>
+      <td>${b.id}</td>
+      <td>${escapeHTML(b.invoiceNo||"")}</td>
+      <td>${escapeHTML(b.supplierInvoice||"")}</td>
+      <td>${escapeHTML(getClient(b).name)}</td>
+      <td>${escapeHTML(b.country||"")}</td>
+      <td>${escapeHTML(b.city||"")}</td>
+      <td>${money(b.clientPaid||0)}</td>
+      <td>${money(b.supplierPaid||0)}</td>
+      <td>${money(b.profit||0)}</td>
+      <td>${money(b.gst||0)}</td>
+      <td>${money(b.netProfit||0)}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("reportTable").innerHTML=
+    rows||`<tr><td colspan="13">No records found.</td></tr>`;
+
+  const supplierRows=db.suppliers.map(s=>{
+    let cost=0,paid=0,count=0;
+
+    db.bookings.forEach(b=>{
+      const services=[
+        ...(b.flights||[]),
+        ...(b.hotels||[]),
+        ...(b.transfers||[])
+      ];
+
+      const supplierServices=services.filter(x=>x.supplierId===s.id);
+
+      if(supplierServices.length){
+        count++;
+        cost+=supplierServices.reduce((sum,x)=>sum+Number(x.cost||0),0);
+        paid+=Number(b.supplierPaid||0);
+      }
+    });
+
+    return {s,cost,paid,due:Math.max(0,cost-paid),count};
+  }).filter(x=>x.count>0)
+  .map(x=>`
+    <tr>
+      <td>${escapeHTML(x.s.name)}</td>
+      <td>${money(x.cost)}</td>
+      <td>${money(x.paid)}</td>
+      <td>${money(x.due)}</td>
+      <td>${x.count}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("supplierReportTable").innerHTML=
+    supplierRows||`<tr><td colspan="5">No supplier booking records.</td></tr>`;
+
+  renderCAReports();
+}
+
+function renderCAReports(){
+  const bookings=filteredReports();
+  const generatedAt=new Date();
+  const company=db.company||{};
+  const header=el=>document.getElementById(el);
+  const caHeader=header("caReportHeader");
+  if(caHeader) caHeader.innerHTML=`<div style="text-align:center"><img src="${getCompanyLogo()}" class="report-logo" alt="Company Logo"></div><strong>${escapeHTML(company.name||"Time2Holidays")}</strong><br>GST: ${escapeHTML(company.gst||"-")} | Phone: ${escapeHTML(company.phone||"-")} | Email: ${escapeHTML(company.email||"-")}<br>${escapeHTML(company.address||"")}<br><strong>Report Generated:</strong> ${generatedAt.toLocaleString("en-IN")} | <strong>Period:</strong> ${escapeHTML(document.getElementById("reportFrom")?.value||"Beginning")} to ${escapeHTML(document.getElementById("reportTo")?.value||"Today")}`;
+  const sales=bookings.reduce((sum,b)=>sum+Number(b.clientSale||0),0);
+  const cost=bookings.reduce((sum,b)=>sum+Number(b.supplierCost||0),0);
+  const grossProfit=sales-cost;
+  const gst=bookings.reduce((sum,b)=>sum+Number(b.gst||0),0);
+  const netProfit=bookings.reduce((sum,b)=>sum+Number(b.netProfit ?? ((Number(b.profit||0))-Number(b.gst||0))),0);
+  const clientReceived=bookings.reduce((sum,b)=>sum+Number(b.clientPaid||0),0);
+  const supplierPaid=bookings.reduce((sum,b)=>sum+Number(b.supplierPaid||0),0);
+  const receivables=Math.max(0,sales-clientReceived);
+  const payables=Math.max(0,cost-supplierPaid);
+  const netCash=Math.max(0,clientReceived-supplierPaid);
+  const retained=Math.max(0,netProfit);
+
+  const el=id=>document.getElementById(id);
+  if(el('caSales')) el('caSales').textContent=money(sales);
+  if(el('caCost')) el('caCost').textContent=money(cost);
+  if(el('caProfit')) el('caProfit').textContent=money(netProfit);
+  if(el('caGST')) el('caGST').textContent=money(gst);
+
+  if(el('profitLossTable')) el('profitLossTable').innerHTML=`
+    <tr><td>Revenue / Client Sales</td><td class="right money">${money(sales)}</td></tr>
+    <tr><td>Less: Direct Supplier Cost</td><td class="right money">(${money(cost)})</td></tr>
+    <tr><td><strong>Gross Profit</strong></td><td class="right money"><strong>${money(grossProfit)}</strong></td></tr>
+    <tr><td>Less: GST on Positive Booking Profit</td><td class="right money">(${money(gst)})</td></tr>
+    <tr><td><strong>Net Profit / (Loss)</strong></td><td class="right money"><strong>${money(netProfit)}</strong></td></tr>`;
+
+  const assetTotal=receivables+netCash;
+  const equityAndLiability=payables+retained;
+  if(el('balanceSheetTable')) el('balanceSheetTable').innerHTML=`
+    <tr><td>Client Receivables</td><td class="right money">${money(receivables)}</td><td>Supplier Payables</td><td class="right money">${money(payables)}</td></tr>
+    <tr><td>Net Cash from Recorded Collections</td><td class="right money">${money(netCash)}</td><td>Retained Booking Profit</td><td class="right money">${money(retained)}</td></tr>
+    <tr><td><strong>Total Recorded Assets</strong></td><td class="right money"><strong>${money(assetTotal)}</strong></td><td><strong>Total Recorded Liabilities & Equity</strong></td><td class="right money"><strong>${money(equityAndLiability)}</strong></td></tr>`;
+}
+
+
+function caReportData(){
+  const bookings=(typeof filteredReports==='function'?filteredReports():db.bookings||[]);
+  const n=v=>Number(v||0);
+  const sales=bookings.reduce((sum,b)=>sum+n(b.clientSale),0);
+  const cost=bookings.reduce((sum,b)=>sum+n(b.supplierCost),0);
+  const gross=sales-cost;
+  const gst=bookings.reduce((sum,b)=>sum+n(b.gst),0);
+  const net=bookings.reduce((sum,b)=>sum+n(b.netProfit ?? (n(b.profit)-n(b.gst))),0);
+  const received=bookings.reduce((sum,b)=>sum+n(b.clientPaid),0);
+  const supplierPaid=bookings.reduce((sum,b)=>sum+n(b.supplierPaid),0);
+  const receivables=Math.max(0,sales-received);
+  const payables=Math.max(0,cost-supplierPaid);
+  const cash=received-supplierPaid;
+  return {bookings,sales,cost,gross,gst,net,received,supplierPaid,receivables,payables,cash};
+}
+function caReportMeta(){
+  const c=db.company||{};
+  const from=document.getElementById('reportFrom')?.value||'Beginning';
+  const to=document.getElementById('reportTo')?.value||'Today';
+  return {company:c,from,to,generated:new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'medium'})};
+}
+function caReportHTML(){
+  const d=caReportData(), m=caReportMeta(), c=m.company;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Time2Holidays - CA Report</title><style>
+  *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#172033;background:#fff}.wrap{max-width:900px;margin:auto;padding:30px}.head{text-align:center;border-bottom:3px solid #0b5cab;padding-bottom:14px}.report-logo{max-height:70px;max-width:280px;object-fit:contain;margin:0 auto 8px;display:block}.head h1{margin:0;color:#0b5cab;font-size:25px}.head h2{margin:12px 0 5px;font-size:19px}.meta{font-size:12px;color:#475569;line-height:1.6}.section{margin-top:25px}.section h3{margin:0;background:#eef4fb;padding:10px;border-left:4px solid #0b5cab}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.box{border:1px solid #dbe3ee;padding:10px;border-radius:7px}.box span{display:block;color:#64748b;font-size:11px}.box b{font-size:16px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #94a3b8;padding:10px}th{background:#eef4fb;text-align:left}.r{text-align:right}.total td{font-weight:bold;background:#f8fafc}.note{font-size:11px;color:#64748b;margin-top:18px;padding:10px;background:#fffbeb;border-left:4px solid #d97706}@media print{.wrap{padding:10mm}.section{page-break-inside:avoid}}</style></head><body><div class="wrap"><div class="head"><img class="report-logo" src="${getCompanyLogo()}" alt="Company Logo"><h1>${escapeHTML(c.name||'Time2Holidays')}</h1><div class="meta">${escapeHTML(c.address||'')}<br>GST: ${escapeHTML(c.gst||'-')} | Phone: ${escapeHTML(c.phone||'-')} | Email: ${escapeHTML(c.email||'-')}</div><h2>Chartered Accountant Management Report</h2><div class="meta">Reporting Period: ${escapeHTML(m.from)} to ${escapeHTML(m.to)}<br>Generated: ${escapeHTML(m.generated)}</div></div><div class="summary"><div class="box"><span>Client Sales</span><b>${money(d.sales)}</b></div><div class="box"><span>Supplier Cost</span><b>${money(d.cost)}</b></div><div class="box"><span>Net Profit / (Loss)</span><b>${money(d.net)}</b></div><div class="box"><span>Bookings</span><b>${d.bookings.length}</b></div></div><div class="section"><h3>Profit & Loss Account</h3><table><tr><th>Particulars</th><th class="r">Amount (₹)</th></tr><tr><td>Revenue / Client Sales</td><td class="r">${money(d.sales)}</td></tr><tr><td>Less: Direct Supplier Cost</td><td class="r">(${money(d.cost)})</td></tr><tr class="total"><td>Gross Profit</td><td class="r">${money(d.gross)}</td></tr><tr><td>Less: GST on Recorded Positive Booking Profit</td><td class="r">(${money(d.gst)})</td></tr><tr class="total"><td>Net Profit / (Loss)</td><td class="r">${money(d.net)}</td></tr></table></div><div class="section"><h3>Booking Position / Balance Summary</h3><table><tr><th>Particulars</th><th class="r">Amount (₹)</th></tr><tr><td>Client Receivables</td><td class="r">${money(d.receivables)}</td></tr><tr><td>Supplier Payables</td><td class="r">${money(d.payables)}</td></tr><tr><td>Net Recorded Cash Movement (Client Collections − Supplier Payments)</td><td class="r">${money(d.cash)}</td></tr></table></div><div class="note">This report is generated from booking records available in this application. It is a management report and does not constitute a statutory balance sheet unless complete accounting records (bank, cash, fixed assets, loans, capital, expenses, taxes and adjustments) are maintained.</div></div></body></html>`;
+}
+function openCAReportWindow(autoPrint=false){
+  try{
+    renderCAReports();
+    const w=window.open('', '_blank');
+    if(!w){alert('Pop-up was blocked. Please allow pop-ups and try again.');return null;}
+    w.document.open();w.document.write(caReportHTML());w.document.close();
+    if(autoPrint){w.onload=()=>setTimeout(()=>{w.focus();w.print();},250);}
+    return w;
+  }catch(err){console.error(err);alert('Unable to generate the CA report. Please refresh the page and try again.');return null;}
+}
+function printCAReport(){openCAReportWindow(true);}
+function exportCAPDF(){
+  const w=openCAReportWindow(true);
+  if(w) alert('In the print window, select “Save as PDF” as the destination to create the PDF file.');
+}
+function exportCAExcel(){
+  try{
+    const d=caReportData(),m=caReportMeta(),c=m.company;
+    const html=`<!doctype html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}td,th{border:1px solid #777;padding:8px}th{background:#DCE6F1}.title{font-size:16pt;font-weight:bold}.right{text-align:right}</style></head><body><table><tr><td colspan="2" style="text-align:center"><img src="${getCompanyLogo()}" style="max-height:70px;max-width:280px;object-fit:contain" alt="Company Logo"></td></tr><tr><td colspan="2" class="title">${escapeHTML(c.name||'Time2Holidays')}</td></tr><tr><td colspan="2">${escapeHTML(c.address||'')}</td></tr><tr><td colspan="2">GST: ${escapeHTML(c.gst||'-')} | Phone: ${escapeHTML(c.phone||'-')} | Email: ${escapeHTML(c.email||'-')}</td></tr><tr><td colspan="2">CA Management Report | Period: ${escapeHTML(m.from)} to ${escapeHTML(m.to)} | Generated: ${escapeHTML(m.generated)}</td></tr><tr><th colspan="2">Profit & Loss Account</th></tr><tr><th>Particulars</th><th>Amount (INR)</th></tr><tr><td>Revenue / Client Sales</td><td class="right">${d.sales}</td></tr><tr><td>Direct Supplier Cost</td><td class="right">${d.cost}</td></tr><tr><td>Gross Profit</td><td class="right">${d.gross}</td></tr><tr><td>GST on Recorded Profit</td><td class="right">${d.gst}</td></tr><tr><td>Net Profit / (Loss)</td><td class="right">${d.net}</td></tr><tr><td colspan="2"></td></tr><tr><th colspan="2">Booking Position / Balance Summary</th></tr><tr><td>Client Receivables</td><td class="right">${d.receivables}</td></tr><tr><td>Supplier Payables</td><td class="right">${d.payables}</td></tr><tr><td>Net Recorded Cash Movement</td><td class="right">${d.cash}</td></tr></table></body></html>`;
+    const blob=new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Time2Holidays_CA_Report_${new Date().toISOString().slice(0,10)}.xls`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(err){console.error(err);alert('Unable to export Excel report.');}
+}
+
+
+/* =========================
+   CLIENT INVOICE
+   SUPPLIER DATA IS HIDDEN
+========================= */
+
+function loadInvoiceSelect(){
+  const select=document.getElementById("invoiceBookingSelect");
+
+  select.innerHTML=`<option value="">Select Booking for Invoice</option>`+
+    db.bookings.map(b=>`
+      <option value="${b.id}">
+        ${b.invoiceNo||b.id} - ${escapeHTML(getClient(b).name)}
+      </option>
+    `).join("");
+}
+
+function openInvoice(id){
+  showPage("invoicePage");
+  document.querySelectorAll(".nav").forEach(b=>b.classList.remove("active"));
+
+  loadInvoiceSelect();
+
+  document.getElementById("invoiceBookingSelect").value=id;
+  renderInvoice();
+}
+
+function renderInvoice(){
+  const id=document.getElementById("invoiceBookingSelect").value;
+  const b=db.bookings.find(x=>x.id===id);
+
+  if(!b){
+    document.getElementById("invoiceContent").innerHTML="<h2>Client Invoice</h2><p>Select a booking.</p>";
+    return;
+  }
+
+  const client=getClient(b);
+
+  let servicesHTML="";
+
+  if(b.flights?.length){
+    servicesHTML+=`
+      <h3>Flight Details</h3>
+      <table>
+        <tr><th>Departure</th><th>Arrival</th><th>Date</th><th>Airline</th><th>Flight No.</th></tr>
+        ${b.flights.map(f=>`
+          <tr>
+            <td>${escapeHTML(f.departure)}</td>
+            <td>${escapeHTML(f.arrival)}</td>
+            <td>${escapeHTML(f.date)}</td>
+            <td>${escapeHTML(f.airline)}</td>
+            <td>${escapeHTML(f.flightNo)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    `;
+  }
+
+  if(b.hotels?.length){
+    servicesHTML+=`
+      <h3>Hotel Details</h3>
+      <table>
+        <tr><th>Hotel</th><th>City</th><th>Check-in</th><th>Check-out</th></tr>
+        ${b.hotels.map(h=>`
+          <tr>
+            <td>${escapeHTML(h.name)}</td>
+            <td>${escapeHTML(h.city)}</td>
+            <td>${escapeHTML(h.checkin)}</td>
+            <td>${escapeHTML(h.checkout)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    `;
+  }
+
+  if(b.transfers?.length){
+    servicesHTML+=`
+      <h3>Transfer Details</h3>
+      <table>
+        <tr><th>Pickup</th><th>Drop</th><th>Date</th><th>Type</th></tr>
+        ${b.transfers.map(t=>`
+          <tr>
+            <td>${escapeHTML(t.pickup)}</td>
+            <td>${escapeHTML(t.drop)}</td>
+            <td>${escapeHTML(t.date)}</td>
+            <td>${escapeHTML(t.typeName)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    `;
+  }
+
+  document.getElementById("invoiceContent").innerHTML=`
+    <div class="document-brand">
+      <div>
+        <img class="document-logo" src="${getCompanyLogo()}" alt="Company Logo">
+        <h2>${escapeHTML(db.company.name)}</h2>
+        <div>${escapeHTML(db.company.address||"")}</div>
+        <div>Phone: ${escapeHTML(db.company.phone||"")}</div>
+        <div>Email: ${escapeHTML(db.company.email||"")}</div>
+        <div>GST: ${escapeHTML(db.company.gst||"")}</div>
+      </div>
+
+      <div class="right">
+        <h2>CLIENT INVOICE</h2>
+        <p><strong>Invoice No:</strong> ${escapeHTML(b.invoiceNo||b.id)}</p>
+        <p><strong>Booking Date:</strong> ${escapeHTML(b.bookingDate||"")}</p>
+        <p><strong>Booking ID:</strong> ${escapeHTML(b.id)}</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>Bill To</h3>
+    <p>
+      <strong>${escapeHTML(client.name)}</strong><br>
+      ${escapeHTML(client.phone||"")}<br>
+      ${escapeHTML(client.email||"")}<br>
+      ${escapeHTML(client.address||"")}
+    </p>
+
+    <h3>Passengers</h3>
+    <table>
+      <tr><th>Name</th><th>Type</th><th>Age</th></tr>
+      ${(b.passengers||[]).map(p=>`
+        <tr>
+          <td>${escapeHTML(p.name)}</td>
+          <td>${escapeHTML(p.type)}</td>
+          <td>${escapeHTML(p.age)}</td>
+        </tr>
+      `).join("")}
+    </table>
+
+    ${servicesHTML}
+
+    ${b.clientManualNotes ? `
+      <div class="card" style="margin-top:20px;background:#fffdf5">
+        <h3>Remark</h3>
+        <div style="white-space:pre-wrap;line-height:1.6">${escapeHTML(b.clientManualNotes)}</div>
+      </div>
+    ` : ``}
+
+    <h3 style="margin-top:25px">Payment Summary</h3>
+    <table style="max-width:500px">
+      <tr><th>Total Amount</th><td>${money(b.clientSale)}</td></tr>
+      <tr><th>Amount Paid</th><td>${money(b.clientPaid)}</td></tr>
+      <tr><th>Balance Due</th><td>${money(Math.max(0,b.clientSale-b.clientPaid))}</td></tr>
+    </table>
+
+    <br>
+    <p><strong>Thank you for choosing ${escapeHTML(db.company.name)}.</strong></p>
+
+    <!-- Supplier name, supplier cost and profit intentionally hidden -->
+  `;
+}
+
+
+
+
+/* =========================
+   UNIVERSAL EXCEL / PDF EXPORT
+========================= */
+function downloadWordHTML(filename,title,html){
+  const doc=`<!doctype html><html><head><meta charset="UTF-8"><title>${escapeHTML(title)}</title><style>
+  @page{size:A4;margin:18mm}body{font-family:Arial,sans-serif;color:#172033;padding:10px}h1{color:#0b5cab;text-align:center}h2,h3{color:#0b5cab}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #94a3b8;padding:8px;text-align:left;vertical-align:top}th{background:#eef4fb}.right{text-align:right}.money{font-weight:bold}
+  </style></head><body><div style="text-align:center"><img src="${getCompanyLogo()}" style="max-height:70px;max-width:280px;object-fit:contain" alt="Company Logo"></div><h1>${escapeHTML(db.company?.name||'Time2Holidays')}</h1><p style="text-align:center">${escapeHTML(db.company?.address||'')}<br>GST: ${escapeHTML(db.company?.gst||'-')} | Phone: ${escapeHTML(db.company?.phone||'-')} | Email: ${escapeHTML(db.company?.email||'-')}<br><strong>${escapeHTML(title)}</strong><br>Generated: ${escapeHTML(new Date().toLocaleString('en-IN'))}</p>${html}</body></html>`;
+  const blob=new Blob(['\ufeff'+doc],{type:'application/msword;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function downloadExcelHTML(filename,title,html){
+  const doc=`<!doctype html><html><head><meta charset="UTF-8"><style>
+  body{font-family:Arial,sans-serif;padding:20px;color:#172033}h1{color:#0b5cab}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #94a3b8;padding:8px;text-align:left}th{background:#eef4fb}.right{text-align:right}
+  </style></head><body><div><img src="${getCompanyLogo()}" style="max-height:70px;max-width:280px;object-fit:contain" alt="Company Logo"></div><h1>${escapeHTML(db.company?.name||'Time2Holidays')}</h1><p>${escapeHTML(title)}<br>${escapeHTML(db.company?.address||'')}<br>GST: ${escapeHTML(db.company?.gst||'-')} | Phone: ${escapeHTML(db.company?.phone||'-')} | Email: ${escapeHTML(db.company?.email||'-')}</p>${html}</body></html>`;
+  const blob=new Blob(['\ufeff'+doc],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function openPrintable(title,html){
+  const w=window.open('', '_blank');
+  if(!w){alert('Pop-up was blocked. Please allow pop-ups and try again.');return null;}
+  w.document.open();w.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>${escapeHTML(title)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:0}.wrap{max-width:1000px;margin:auto;padding:28px}h1,h2{color:#0b5cab}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #94a3b8;padding:8px;text-align:left}th{background:#eef4fb}.right{text-align:right}@media print{.wrap{padding:10mm}}</style></head><body><div class="wrap">${html}</div></body></html>`);w.document.close();return w;
+}
+function printPDFWindow(title,html){const w=openPrintable(title,html);if(w)w.onload=()=>setTimeout(()=>{w.focus();w.print();},250);}
+function companyHeaderHTML(title){return `<div style="text-align:center"><img src="${getCompanyLogo()}" style="max-height:75px;max-width:300px;object-fit:contain" alt="Company Logo"></div><h1>${escapeHTML(db.company?.name||'Time2Holidays')}</h1><p>${escapeHTML(db.company?.address||'')}<br>GST: ${escapeHTML(db.company?.gst||'-')} | Phone: ${escapeHTML(db.company?.phone||'-')} | Email: ${escapeHTML(db.company?.email||'-')}<br><strong>${escapeHTML(title)}</strong><br>Generated: ${escapeHTML(new Date().toLocaleString('en-IN'))}</p>`;}
+function rowsToTable(rows){if(!rows.length)return '<p>No data available.</p>';const h=Object.keys(rows[0]);return `<table><thead><tr>${h.map(x=>`<th>${escapeHTML(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${h.map(x=>`<td>${escapeHTML(r[x])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;}
+function bookingExportRows(){return db.bookings.map(b=>({'Booking ID':b.id,'Booking Date':b.bookingDate,'Client':getClient(b).name,'Country':b.country,'City':b.city,'Invoice':b.invoiceNo,'Status':b.status,'Client Sale':b.clientSale,'Client Paid':b.clientPaid,'Supplier Cost':b.supplierCost,'Supplier Paid':b.supplierPaid,'Profit':b.profit,'GST 5%':b.gst,'Net Profit':b.netProfit}));}
+function reportExportRows(){return filteredReports().map((b,index)=>({'Sr No':index+1,'BKG DATE':b.bookingDate,'Booking ID':b.id,'Company Invoice':b.invoiceNo,'Supplier Invoice NO':b.supplierInvoice,'Customer':getClient(b).name,'Country':b.country,'CITY':b.city,'Gross Paid':b.clientPaid,'Supplier Paid':b.supplierPaid,'Profit':b.profit,'GST 5% On Profit':b.gst,'Net Profit':b.netProfit}));}
+function exportBookingsExcel(){const rows=bookingExportRows();downloadExcelHTML(`Time2Holidays_Bookings_${new Date().toISOString().slice(0,10)}.xls`,'All Bookings Report',rowsToTable(rows));}
+function exportBookingsPDF(){const rows=bookingExportRows();printPDFWindow('All Bookings Report',companyHeaderHTML('All Bookings Report')+rowsToTable(rows));}
+function exportReportExcel(){const rows=reportExportRows();downloadExcelHTML(`Time2Holidays_Booking_Report_${new Date().toISOString().slice(0,10)}.xls`,'Booking & Profit Report',rowsToTable(rows));}
+function exportReportPDF(){const rows=reportExportRows();printPDFWindow('Booking & Profit Report',companyHeaderHTML('Booking & Profit Report')+rowsToTable(rows));}
+function printInvoice(){const content=document.getElementById('invoiceContent').innerHTML;printPDFWindow('Client Invoice',content);}
+function exportInvoicePDF(){const content=document.getElementById('invoiceContent').innerHTML;if(content.includes('Select a booking')){alert('Please select a booking first.');return;}printPDFWindow('Client Invoice',content);}
+function exportInvoiceExcel(){const content=document.getElementById('invoiceContent').innerHTML;if(content.includes('Select a booking')){alert('Please select a booking first.');return;}const id=document.getElementById('invoiceBookingSelect').value;const b=db.bookings.find(x=>x.id===id);downloadExcelHTML(`Invoice_${(b?.invoiceNo||b?.id||'Time2Holidays').replace(/[^a-z0-9_-]/gi,'_')}.xls`,'Client Invoice',content);}
+function exportBookingsWord(){const rows=bookingExportRows();downloadWordHTML(`Time2Holidays_Bookings_${new Date().toISOString().slice(0,10)}.doc`,'All Bookings Report',rowsToTable(rows));}
+function exportReportWord(){const rows=reportExportRows();downloadWordHTML(`Time2Holidays_Booking_Report_${new Date().toISOString().slice(0,10)}.doc`,'Booking & Profit Report',rowsToTable(rows));}
+function exportInvoiceWord(){const content=document.getElementById('invoiceContent').innerHTML;if(content.includes('Select a booking')){alert('Please select a booking first.');return;}const id=document.getElementById('invoiceBookingSelect').value;const b=db.bookings.find(x=>x.id===id);downloadWordHTML(`Invoice_${(b?.invoiceNo||b?.id||'Time2Holidays').replace(/[^a-z0-9_-]/gi,'_')}.doc`,'Client Invoice',content);}
+function exportCAWord(){try{const d=caReportData(),m=caReportMeta();const html=`<h2 style="text-align:center">Chartered Accountant Management Report</h2><p style="text-align:center">Reporting Period: ${escapeHTML(m.from)} to ${escapeHTML(m.to)}<br>Generated: ${escapeHTML(m.generated)}</p><h3>Profit & Loss Account</h3><table><tr><th>Particulars</th><th>Amount (₹)</th></tr><tr><td>Revenue / Client Sales</td><td class="right">${money(d.sales)}</td></tr><tr><td>Direct Supplier Cost</td><td class="right">${money(d.cost)}</td></tr><tr><td><strong>Gross Profit</strong></td><td class="right"><strong>${money(d.gross)}</strong></td></tr><tr><td>GST on Recorded Positive Booking Profit</td><td class="right">${money(d.gst)}</td></tr><tr><td><strong>Net Profit / (Loss)</strong></td><td class="right"><strong>${money(d.net)}</strong></td></tr></table><h3>Booking Position / Balance Summary</h3><table><tr><th>Particulars</th><th>Amount (₹)</th></tr><tr><td>Client Receivables</td><td class="right">${money(d.receivables)}</td></tr><tr><td>Supplier Payables</td><td class="right">${money(d.payables)}</td></tr><tr><td>Net Recorded Cash Movement</td><td class="right">${money(d.cash)}</td></tr></table>`;downloadWordHTML(`Time2Holidays_CA_Report_${new Date().toISOString().slice(0,10)}.doc`,'CA Management Report',html);}catch(err){console.error(err);alert('Unable to export Word report.');}}
+
+
+/* =========================
+   EXPORT
+========================= */
+
+function downloadCSV(filename,rows){
+  if(!rows.length){
+    alert("No data available.");
+    return;
+  }
+
+  const headers=Object.keys(rows[0]);
+
+  const csv=[
+    headers.join(","),
+    ...rows.map(row=>
+      headers.map(h=>{
+        const value=String(row[h]??"").replace(/"/g,'""');
+        return `"${value}"`;
+      }).join(",")
+    )
+  ].join("\n");
+
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function exportBookings(){
+  const rows=db.bookings.map(b=>({
+    "Booking ID":b.id,
+    "Booking Date":b.bookingDate,
+    "Client":getClient(b).name,
+    "Country":b.country,
+    "City":b.city,
+    "Invoice":b.invoiceNo,
+    "Status":b.status,
+    "Client Sale":b.clientSale,
+    "Client Paid":b.clientPaid,
+    "Supplier Cost":b.supplierCost,
+    "Supplier Paid":b.supplierPaid,
+    "Profit":b.profit,
+    "GST 5%":b.gst,
+    "Net Profit":b.netProfit
+  }));
+
+  downloadCSV("Time2Holidays_Bookings.csv",rows);
+}
+
+function exportReport(){
+  const rows=filteredReports().map((b,index)=>({
+    "Sr No":index+1,
+    "BKG DATE":b.bookingDate,
+    "Booking ID":b.id,
+    "Company Invoice":b.invoiceNo,
+    "Supplier Invoice NO":b.supplierInvoice,
+    "Customer":getClient(b).name,
+    "Country":b.country,
+    "CITY":b.city,
+    "Gross Paid":b.clientPaid,
+    "Supplier Paid":b.supplierPaid,
+    "Profit":b.profit,
+    "GST 5% On Profit":b.gst,
+    "Net Profit":b.netProfit
+  }));
+
+  downloadCSV("Time2Holidays_Report.csv",rows);
+}
+
+
+/* =========================
+   BACKUP / RESTORE
+========================= */
+
+function backupDatabase(){
+  const blob=new Blob(
+    [JSON.stringify(db,null,2)],
+    {type:"application/json"}
+  );
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="Time2Holidays_Database_Backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function restoreDatabase(event){
+  const file=event.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    try{
+      db=JSON.parse(e.target.result);
+      saveDB();
+      location.reload();
+    }catch(err){
+      alert("Invalid backup file.");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+function clearDatabase(){
+  if(!confirmPermanentDelete("ALL saved booking, client, supplier and company data",
+    "This action clears the complete local database on this device.")) return;
+  localStorage.removeItem(DB_KEY);
+  alert("Database deleted successfully.");
+  location.reload();
+}
+
+
+/* =========================
+   CSV IMPORT
+========================= */
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(x=>x.trim());
+
+  if(lines.length<2) return [];
+
+  const headers=lines[0].split(",").map(h=>h.trim().toLowerCase());
+
+  return lines.slice(1).map(line=>{
+    const values=line.split(",");
+    const obj={};
+
+    headers.forEach((h,i)=>{
+      obj[h]=(values[i]||"").trim();
+    });
+
+    return obj;
+  });
+}
+
+function importCSV(event,type){
+  const file=event.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    const rows=parseCSV(e.target.result);
+
+    if(type==="suppliers"){
+      rows.forEach(r=>{
+        const name=r.name||r["supplier name"]||r.supplier;
+
+        if(name && !db.suppliers.some(s=>s.name.toLowerCase()===name.toLowerCase())){
+          db.suppliers.push({
+            id:uid("SUP"),
+            name,
+            contact:r.contact||r["contact person"]||"",
+            phone:r.phone||"",
+            email:r.email||"",
+            gst:r.gst||r["gst no"]||"",
+            address:r.address||""
+          });
+        }
+      });
+    }
+
+    if(type==="airports"){
+      rows.forEach(r=>{
+        const code=r.code||r.iata||r["iata code"];
+        const name=r.name||r["airport name"];
+        const city=r.city||"";
+
+        if(code && !db.airports.some(a=>a.code===code)){
+          db.airports.push({code,name,city});
+        }
+      });
+    }
+
+    if(type==="airlines"){
+      rows.forEach(r=>{
+        const name=r.name||r["airline name"]||r.airline;
+        const code=r.code||r.iata||r["iata code"]||"";
+
+        if(name && !db.airlines.some(a=>a.name.toLowerCase()===name.toLowerCase())){
+          db.airlines.push({name,code});
+        }
+      });
+    }
+
+    saveDB();
+    alert("Data imported successfully.");
+    renderSuppliers();
+  };
+
+  reader.readAsText(file);
+}
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+loadUsers();
+applyLoginState();
+loadDB();
+
+document.getElementById("headerCompany").textContent=
+  (db.company.name||"Time2Holidays")+" | INR (₹)";
+
+renderDashboard();
+
+
+// Keep company branding visible after the application starts.
+document.addEventListener('DOMContentLoaded',()=>{ setTimeout(refreshCompanyLogoUI,0); });
+</script>
+
+
+<div class="mobile-bottom-nav no-print" id="mobileBottomNav">
+  <button class="active" type="button" onclick="mobileGo('dashboard',this)"><span>🏠</span>Home</button>
+  <button type="button" onclick="mobileGo('bookings',this)"><span>📋</span>Bookings</button>
+  <button type="button" onclick="mobileGo('reports',this)"><span>📊</span>Reports</button>
+  <button type="button" onclick="mobileGo('invoicePage',this)"><span>🧾</span>Invoice</button>
+  <button type="button" onclick="toggleMobileMenu()"><span>☰</span>More</button>
+</div>
+<script>
+function toggleMobileMenu(){document.body.classList.toggle('menu-open');}
+function closeMobileMenu(){document.body.classList.remove('menu-open');}
+function mobileGo(page,btn){
+  const navBtn=[...document.querySelectorAll('.sidebar .nav')].find(b=>String(b.getAttribute('onclick')||'').includes("showPage('"+page+"'"));
+  if(navBtn){showPage(page,navBtn);}else{const target=document.getElementById(page);if(target){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));target.classList.add('active');}}
+  document.querySelectorAll('#mobileBottomNav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');closeMobileMenu();window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener('click',function(e){if(window.innerWidth<=800 && e.target.closest('.sidebar .nav')){setTimeout(closeMobileMenu,50);}});
+window.addEventListener('resize',function(){if(window.innerWidth>800)closeMobileMenu();});
+</script>
+</body>
+</html>
